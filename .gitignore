@@ -1,0 +1,21 @@
+odin-sokol-hot-reload-template
+build.nosync
+sokol-shdc/
+src/game/sokol/
+*.a
+*.dylib
+gen__*.odin
+game10
+#OS and IDE file
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+/.idea
+*.iml
+
+

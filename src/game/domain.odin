@@ -1,0 +1,26 @@
+package game
+
+// Constants for subpixel precision
+SUBPIXEL_BITS :: 6 // 64 subpixels per pixel
+UNIT :: 1 << SUBPIXEL_BITS
+
+@(require_results)
+to_pixel :: proc(subpixel: int) -> int {
+	return subpixel >> SUBPIXEL_BITS
+}
+
+@(require_results)
+to_pixelf :: proc {
+	to_pixelf_int,
+	to_pixelf_int2,
+}
+
+@(require_results)
+to_pixelf_int :: proc(subpixel: int) -> f32 {
+	return f32(subpixel >> SUBPIXEL_BITS)
+}
+
+@(require_results)
+to_pixelf_int2 :: proc(subpixel: [2]int) -> [2]f32 {
+	return [2]f32{f32(subpixel.x >> SUBPIXEL_BITS), f32(subpixel.y >> SUBPIXEL_BITS)}
+}
