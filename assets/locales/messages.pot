@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 15:58+0300\n"
+"POT-Creation-Date: 2025-12-16 17:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,26 +17,202 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/game/render_menu.odin:30
-msgid "PAUSED"
+#: src/game/render_menu.odin:28
+msgid "CHAT"
 msgstr ""
 
-#: src/game/render_menu.odin:41
-msgid "CONTINUE"
-msgstr ""
-
-#: src/game/render_menu.odin:46
-msgid "INVENTORY"
+#: src/game/render_menu.odin:51
+msgid "GAME"
 msgstr ""
 
 #: src/game/render_menu.odin:52
-msgid "SETTINGS"
+msgid "CONTROLS"
 msgstr ""
 
-#: src/game/render_menu.odin:57
+#: src/game/render_menu.odin:53
+msgid "GRAPHICS"
+msgstr ""
+
+#: src/game/render_menu.odin:54
+msgid "AUDIO"
+msgstr ""
+
+#: src/game/render_menu.odin:55
+msgid "SETTING"
+msgstr ""
+
+#: src/game/render_menu.odin:90
+msgid "LANGUAGE"
+msgstr ""
+
+#: src/game/render_menu.odin:90
+msgid "ENGLISH"
+msgstr ""
+
+#: src/game/render_menu.odin:91
+msgid "DIFFICULTY"
+msgstr ""
+
+#: src/game/render_menu.odin:91
+msgid "EASY"
+msgstr ""
+
+#: src/game/render_menu.odin:92
+msgid "SCREEN SHAKE"
+msgstr ""
+
+#: src/game/render_menu.odin:93
+msgid "MINI MAP"
+msgstr ""
+
+#: src/game/render_menu.odin:95
+msgid "Left"
+msgstr ""
+
+#: src/game/render_menu.odin:95
+msgid "A"
+msgstr ""
+
+#: src/game/render_menu.odin:96
+msgid "Right"
+msgstr ""
+
+#: src/game/render_menu.odin:96
+msgid "D"
+msgstr ""
+
+#: src/game/render_menu.odin:97
+msgid "Up"
+msgstr ""
+
+#: src/game/render_menu.odin:97
+msgid "W"
+msgstr ""
+
+#: src/game/render_menu.odin:98
+msgid "Down"
+msgstr ""
+
+#: src/game/render_menu.odin:98
+msgid "S"
+msgstr ""
+
+#: src/game/render_menu.odin:99
+msgid "Jump"
+msgstr ""
+
+#: src/game/render_menu.odin:99
+msgid "Space"
+msgstr ""
+
+#: src/game/render_menu.odin:100
+msgid "Attack"
+msgstr ""
+
+#: src/game/render_menu.odin:100
+msgid "Mouse1"
+msgstr ""
+
+#: src/game/render_menu.odin:101
+msgid "Heavy Attack"
+msgstr ""
+
+#: src/game/render_menu.odin:101
+msgid "Mouse2"
+msgstr ""
+
+#: src/game/render_menu.odin:102
+msgid "Pause"
+msgstr ""
+
+#: src/game/render_menu.odin:102
+msgid "Esc"
+msgstr ""
+
+#: src/game/render_menu.odin:103
+msgid "Inventory"
+msgstr ""
+
+#: src/game/render_menu.odin:103
+msgid "I"
+msgstr ""
+
+#: src/game/render_menu.odin:106
+msgid "FULL SCREEN"
+msgstr ""
+
+#: src/game/render_menu.odin:113
+msgid "SOUND EFFECTS"
+msgstr ""
+
+#: src/game/render_menu.odin:115
+msgid "SOUND VOLUME"
+msgstr ""
+
+#: src/game/render_menu.odin:118
+msgid "MUSIC"
+msgstr ""
+
+#: src/game/render_menu.odin:120
+msgid "MUSIC VOLUME"
+msgstr ""
+
+#: src/game/render_menu.odin:130
+msgid "TREE"
+msgstr ""
+
+#: src/game/render_menu.odin:179
+msgid "The End Game Over"
+msgstr ""
+
+#: src/game/render_menu.odin:180
+msgid "Continue"
+msgstr ""
+
+#: src/game/render_menu.odin:181
+msgid "Restart"
+msgstr ""
+
+#: src/game/render_menu.odin:182 src/game/render_menu.odin:194
+msgid "Quit"
+msgstr ""
+
+#: src/game/render_menu.odin:187 src/game/render_menu.odin:221
 msgid "MAIN MENU"
 msgstr ""
 
-#: src/game/render_menu.odin:62
+#: src/game/render_menu.odin:190
+msgid "Start Game"
+msgstr ""
+
+#: src/game/render_menu.odin:191
+msgid "Continue Game"
+msgstr ""
+
+#: src/game/render_menu.odin:192
+msgid "Settings"
+msgstr ""
+
+#: src/game/render_menu.odin:193
+msgid "Credits"
+msgstr ""
+
+#: src/game/render_menu.odin:201
+msgid "PAUSED"
+msgstr ""
+
+#: src/game/render_menu.odin:206
+msgid "CONTINUE"
+msgstr ""
+
+#: src/game/render_menu.odin:211
+msgid "INVENTORY"
+msgstr ""
+
+#: src/game/render_menu.odin:216
+msgid "SETTINGS"
+msgstr ""
+
+#: src/game/render_menu.odin:226
 msgid "QUIT"
 msgstr ""

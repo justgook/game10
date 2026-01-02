@@ -1,13 +1,8 @@
 package game
 
 import "core:fmt"
-import "core:math/linalg"
 import "logic"
-import "render/tilemap"
-import "render/ui"
 import sapp "sokol/app"
-import sg "sokol/gfx"
-import sglue "sokol/glue"
 
 
 LOCALES_DIR :: #config(LOCALES_DIR, "../../build.nosync/locales")
@@ -36,17 +31,13 @@ world_init :: proc(w: ^World) {
 	w.zoom = 1
 
 
-	change_scene(w, "build.nosync/dd-000-000.wbin")
+	// change_scene(w, "build.nosync/dd-000-000.wbin")
 
 
 	player := create_entity(w)
 	logic.add_component(&w.velocity, player, Velocity{1, 0})
 	logic.add_component(&w.position, player, Position{0, 0})
-	logic.add_component(
-		&w.sprite,
-		player,
-		Sprite{uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}},
-	)
+	logic.add_component(&w.sprite, player, Sprite{uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}})
 }
 
 world_frame :: proc(w: ^World) {

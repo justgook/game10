@@ -130,19 +130,20 @@ draw_ui :: proc(ui_state: ^Ui_State) {
 }
 
 @(private = "file")
-ui_init_texture :: proc() -> sg.Image {
+ui_init_texture :: proc() -> sg.View {
 	desc := sg.Image_Desc {
 		width        = microui.DEFAULT_ATLAS_WIDTH,
 		height       = microui.DEFAULT_ATLAS_HEIGHT,
 		pixel_format = .R8,
 	}
 
-	desc.data.subimage[0][0] = {
+	desc.data.mip_levels[0] = {
 		ptr  = raw_data(microui.default_atlas_alpha[:]),
 		size = microui.DEFAULT_ATLAS_WIDTH * microui.DEFAULT_ATLAS_HEIGHT, // Size in bytes for R8 format is just w*h
 	}
 
-	return sg.make_image(desc)
+	img := sg.make_image(desc)
+	return sg.make_view({texture = {image = img}})
 }
 
 ui_init_renderer :: proc(ui_state: ^Ui_State) {
@@ -150,7 +151,7 @@ ui_init_renderer :: proc(ui_state: ^Ui_State) {
 	ui_state.ctx.text_height = microui.default_atlas_text_height
 
 
-	ui_state.bind.images[IMG_atlas] = ui_init_texture()
+	ui_state.bind.views[VIEW_atlas] = ui_init_texture()
 	ui_state.bind.samplers[SMP_atlas_smp] = sg.make_sampler({})
 
 	ui_state.bind.vertex_buffers[0] = sg.make_buffer(

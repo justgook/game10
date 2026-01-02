@@ -30,7 +30,7 @@ destory_render_tilemap :: proc(manager: ^Tilemap_Manager) {
 }
 
 tilemap_set_texture :: proc(tex0: sg.Image, manager: ^Tilemap_Manager) {
-	manager.bind.images[IMG_atlas] = tex0
+	manager.bind.views[VIEW_atlas] = sg.make_view({texture = {image = tex0}})
 }
 
 set_atlas_tilemap :: proc(img: ^image.Image, manager: ^Tilemap_Manager) {
@@ -41,14 +41,14 @@ set_atlas_tilemap :: proc(img: ^image.Image, manager: ^Tilemap_Manager) {
 		pixel_format = .RGBA8,
 	}
 
-	desc.data.subimage[0][0] = {
+	desc.data.mip_levels[0] = {
 		ptr  = raw_data(img.pixels.buf),
 		size = auto_cast (img.width * img.height * 4),
 	}
 
 	tex0 := sg.make_image(desc)
 
-	manager.bind.images[IMG_atlas] = tex0
+	manager.bind.views[VIEW_atlas] = sg.make_view({texture = {image = tex0}})
 }
 
 create_render_tilemap :: proc(img: ^image.Image) -> ^Tilemap_Manager {

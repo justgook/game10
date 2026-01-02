@@ -30,7 +30,7 @@ sprites_cleanup :: proc(manager: ^Sprites) {
 }
 
 sprites_set_texture :: proc(tex0: sg.Image, manager: ^Sprites) {
-	manager.bind.images[IMG_tex0] = tex0
+	manager.bind.views[VIEW_tex0] = sg.make_view({texture = {image = tex0}})
 }
 
 sprites_init :: proc() -> ^Sprites {

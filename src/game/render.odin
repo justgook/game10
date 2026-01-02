@@ -2,10 +2,8 @@ package game
 
 import "../entry"
 import "core:fmt"
-// import "core:image/png"
 import "core:image/qoi"
 import "core:math/linalg"
-import "core:slice"
 import "render/sprites"
 import "render/tilemap"
 import "render/ui"
@@ -56,19 +54,26 @@ render_init :: proc(r: ^Render) {
 		colors = {0 = {load_action = .CLEAR, clear_value = {0, 0, 0, 1}}},
 	}
 
-	img_desc := sg.Image_Desc {
-		usage = {render_attachment = true},
+	color_img_desc := sg.Image_Desc {
+		usage = {color_attachment = true},
 		width = 256,
 		height = 256,
 		pixel_format = .RGBA8,
 		sample_count = 1, //OFFSCREEN_SAMPLE_COUNT,
 	}
-	color_img := sg.make_image(img_desc)
-	img_desc.pixel_format = .DEPTH
-	depth_img := sg.make_image(img_desc)
-	r.draw_minimap_attachments = sg.make_attachments(
-		{colors = {0 = {image = color_img}}, depth_stencil = {image = depth_img}},
-	)
+	depth_img_desc := sg.Image_Desc {
+		usage = {depth_stencil_attachment = true},
+		width = 256,
+		height = 256,
+		pixel_format = .DEPTH,
+		sample_count = 1, //OFFSCREEN_SAMPLE_COUNT,
+	}
+	color_img := sg.make_image(color_img_desc)
+	depth_img := sg.make_image(depth_img_desc)
+	r.draw_minimap_attachments = {
+		colors = {0 = sg.make_view({color_attachment = {image = color_img}})},
+		depth_stencil = sg.make_view({depth_stencil_attachment = {image = depth_img}}),
+	}
 }
 
 render_frame :: proc(w: ^World, r: ^Render) {
@@ -115,14 +120,7 @@ render_reloaded :: proc(r: ^Render) {
 update_ortho :: proc(w: ^World, r: ^Render) {
 	window_w := sapp.widthf()
 	window_h := sapp.heightf()
-	ortho := linalg.matrix_ortho3d_f32(
-		window_w * -0.5,
-		window_w * 0.5,
-		window_h * -0.5,
-		window_h * 0.5,
-		-1,
-		1,
-	)
+	ortho := linalg.matrix_ortho3d_f32(window_w * -0.5, window_w * 0.5, window_h * -0.5, window_h * 0.5, -1, 1)
 	translate_mat := linalg.matrix4_translate_f32({-w.camera.x, -w.camera.y, 0.0})
 	scale_mat := linalg.matrix4_scale_f32({1.0 / w.zoom, 1.0 / w.zoom, 1.0})
 
@@ -143,7 +141,7 @@ load_test_img :: proc(filename: string, r: ^Render) -> (ok: bool) {
 		pixel_format = .RGBA8,
 	}
 
-	desc.data.subimage[0][0] = {
+	desc.data.mip_levels[0] = {
 		ptr  = raw_data(img.pixels.buf),
 		size = uint(img.width * img.height * 4),
 	}

@@ -25,25 +25,23 @@ game_app_default_desc :: proc() -> sapp.Desc {
 		width = 1280,
 		height = 720,
 		sample_count = 4,
-		window_title = "Odin + Sokol hot reload template",
+		window_title = "Game",
 		icon = {sokol_default = true},
 		logger = {func = slog.func},
-		html5 = {
-			update_document_title = true,
-		},
+		html5 = {update_document_title = true},
 	}
 }
 
 
 @(export)
 game_init :: proc() {
-	err: i18n.Error
-	mo_data, _ := entry.read_entire_file(LOCALES_DIR + "/ru/messages.mo", context.temp_allocator)
-	i18n.ACTIVE, err = i18n.parse_mo(mo_data)
-	if err != nil {
-		fmt.eprintfln("error while parsing", "123")
-		return
-	}
+	// err: i18n.Error
+	// mo_data, _ := entry.read_entire_file(LOCALES_DIR + "/ru/messages.mo", context.temp_allocator)
+	// i18n.ACTIVE, err = i18n.parse_mo(mo_data)
+	// if err != nil {
+	// 	fmt.eprintfln("error while parsing", "error", err)
+	// 	return
+	// }
 
 	sg.setup({environment = sglue.environment(), logger = {func = slog.func}})
 	g = new(Game_Memory)

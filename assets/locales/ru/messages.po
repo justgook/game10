@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: game 9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 15:51+0300\n"
+"POT-Creation-Date: 2025-12-16 17:04+0200\n"
 "PO-Revision-Date: 2025-07-09 15:51+0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -18,26 +18,202 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: src/game/render_menu.odin:30
-msgid "PAUSED"
-msgstr "RU_PAUSED"
+#: src/game/render_menu.odin:28
+msgid "CHAT"
+msgstr "ЧАТ"
 
-#: src/game/render_menu.odin:41
-msgid "CONTINUE"
-msgstr ""
-
-#: src/game/render_menu.odin:46
-msgid "INVENTORY"
-msgstr ""
+#: src/game/render_menu.odin:51
+msgid "GAME"
+msgstr "ИГРА"
 
 #: src/game/render_menu.odin:52
-msgid "SETTINGS"
-msgstr ""
+msgid "CONTROLS"
+msgstr "УПРАВЛЕНИЕ"
 
-#: src/game/render_menu.odin:57
+#: src/game/render_menu.odin:53
+msgid "GRAPHICS"
+msgstr "ГРАФИКА"
+
+#: src/game/render_menu.odin:54
+msgid "AUDIO"
+msgstr "ЗВУК"
+
+#: src/game/render_menu.odin:55
+msgid "SETTING"
+msgstr "НАСТРОЙКИ"
+
+#: src/game/render_menu.odin:90
+msgid "LANGUAGE"
+msgstr "ЯЗЫК"
+
+#: src/game/render_menu.odin:90
+msgid "ENGLISH"
+msgstr "АНГЛИЙСКИЙ"
+
+#: src/game/render_menu.odin:91
+msgid "DIFFICULTY"
+msgstr "СЛОЖНОСТЬ"
+
+#: src/game/render_menu.odin:91
+msgid "EASY"
+msgstr "ЛЕГКО"
+
+#: src/game/render_menu.odin:92
+msgid "SCREEN SHAKE"
+msgstr "ТРЯСКА ЭКРАНА"
+
+#: src/game/render_menu.odin:93
+msgid "MINI MAP"
+msgstr "МИНИ-КАРТА"
+
+#: src/game/render_menu.odin:95
+msgid "Left"
+msgstr "Влево"
+
+#: src/game/render_menu.odin:95
+msgid "A"
+msgstr "А"
+
+#: src/game/render_menu.odin:96
+msgid "Right"
+msgstr "Вправо"
+
+#: src/game/render_menu.odin:96
+msgid "D"
+msgstr "Д"
+
+#: src/game/render_menu.odin:97
+msgid "Up"
+msgstr "Вверх"
+
+#: src/game/render_menu.odin:97
+msgid "W"
+msgstr "Ц"
+
+#: src/game/render_menu.odin:98
+msgid "Down"
+msgstr "Вниз"
+
+#: src/game/render_menu.odin:98
+msgid "S"
+msgstr "Ы"
+
+#: src/game/render_menu.odin:99
+msgid "Jump"
+msgstr "Прыжок"
+
+#: src/game/render_menu.odin:99
+msgid "Space"
+msgstr "Пробел"
+
+#: src/game/render_menu.odin:100
+msgid "Attack"
+msgstr "Атака"
+
+#: src/game/render_menu.odin:100
+msgid "Mouse1"
+msgstr "Мышь1"
+
+#: src/game/render_menu.odin:101
+msgid "Heavy Attack"
+msgstr "Сильная атака"
+
+#: src/game/render_menu.odin:101
+msgid "Mouse2"
+msgstr "Мышь2"
+
+#: src/game/render_menu.odin:102
+msgid "Pause"
+msgstr "Пауза"
+
+#: src/game/render_menu.odin:102
+msgid "Esc"
+msgstr "Esc"
+
+#: src/game/render_menu.odin:103
+msgid "Inventory"
+msgstr "Инвентарь"
+
+#: src/game/render_menu.odin:103
+msgid "I"
+msgstr "I"
+
+#: src/game/render_menu.odin:106
+msgid "FULL SCREEN"
+msgstr "ПОЛНОЭКРАННЫЙ РЕЖИМ"
+
+#: src/game/render_menu.odin:113
+msgid "SOUND EFFECTS"
+msgstr "ЗВУКОВЫЕ ЭФФЕКТЫ"
+
+#: src/game/render_menu.odin:115
+msgid "SOUND VOLUME"
+msgstr "ГРОМКОСТЬ ЗВУКА"
+
+#: src/game/render_menu.odin:118
+msgid "MUSIC"
+msgstr "МУЗЫКА"
+
+#: src/game/render_menu.odin:120
+msgid "MUSIC VOLUME"
+msgstr "ГРОМКОСТЬ МУЗЫКИ"
+
+#: src/game/render_menu.odin:130
+msgid "TREE"
+msgstr "ДЕРЕВО"
+
+#: src/game/render_menu.odin:179
+msgid "The End Game Over"
+msgstr "Конец Игры Окончание"
+
+#: src/game/render_menu.odin:180
+msgid "Continue"
+msgstr "Продолжить"
+
+#: src/game/render_menu.odin:181
+msgid "Restart"
+msgstr "Начать заново"
+
+#: src/game/render_menu.odin:182 src/game/render_menu.odin:194
+msgid "Quit"
+msgstr "Выход"
+
+#: src/game/render_menu.odin:187 src/game/render_menu.odin:221
 msgid "MAIN MENU"
-msgstr ""
+msgstr "ГЛАВНОЕ МЕНЮ"
 
-#: src/game/render_menu.odin:62
+#: src/game/render_menu.odin:190
+msgid "Start Game"
+msgstr "Начать игру"
+
+#: src/game/render_menu.odin:191
+msgid "Continue Game"
+msgstr "Продолжить игру"
+
+#: src/game/render_menu.odin:192
+msgid "Settings"
+msgstr "Настройки"
+
+#: src/game/render_menu.odin:193
+msgid "Credits"
+msgstr "Титры"
+
+#: src/game/render_menu.odin:201
+msgid "PAUSED"
+msgstr "ПАУЗА"
+
+#: src/game/render_menu.odin:206
+msgid "CONTINUE"
+msgstr "ПРОДОЛЖИТЬ"
+
+#: src/game/render_menu.odin:211
+msgid "INVENTORY"
+msgstr "ИНВЕНТАРЬ"
+
+#: src/game/render_menu.odin:216
+msgid "SETTINGS"
+msgstr "НАСТРОЙКИ"
+
+#: src/game/render_menu.odin:226
 msgid "QUIT"
-msgstr ""
+msgstr "ВЫХОД"
