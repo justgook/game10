@@ -20,6 +20,7 @@ import sapp "../../game/sokol/app"
 DLL_FILE :: #config(DLL_FILE, "game_hot.dylib")
 
 track: mem.Tracking_Allocator
+reload_in_progress: bool  // Prevent concurrent reloads
 
 Game_API :: struct {
 	lib:               dynlib.Library,
@@ -105,12 +106,19 @@ AmdPowerXpressRequestHighPerformance: i32 = 1
 
 @(private = "file")
 check_reload_dll :: proc() {
+	if reload_in_progress {
+		return
+	}
+
 	game_dll_mod, game_dll_mod_err := os.last_write_time_by_name(DLL_FILE)
 
 	reload := game_dll_mod_err == os.ERROR_NONE && game_api.modification_time != game_dll_mod
 	force_restart := game_api.force_restart()
 
 	if reload || force_restart {
+		reload_in_progress = true
+		defer reload_in_progress = false
+
 		new_game_api, new_game_api_ok := load_game_api()
 
 		if new_game_api_ok == nil {
@@ -180,19 +188,25 @@ load_game_api :: proc() -> (api: Game_API, err: os.Error) {
 	// the compiler from writing to it.
 	os.copy_file(dll_tmp_path, DLL_FILE) or_return
 
+	// Retry loading with backoff for race conditions
+	MAX_RETRIES :: 5
+	RETRY_DELAY_MS :: 10
 
-	// This proc matches the names of the fields in Game_API to symbols in the
-	// game DLL. It actually looks for symbols starting with `game_`, which is
-	// why the argument `"game_"` is there.
-	_, ok := dynlib.initialize_symbols(&api, dll_tmp_path, "game_", "lib")
-	if !ok {
-		fmt.printfln("Failed initializing symbols: {0}", dynlib.last_error())
+	for attempt in 0..<MAX_RETRIES {
+		// This proc matches the names of the fields in Game_API to symbols in the
+		// game DLL. It actually looks for symbols starting with `game_`, which is
+		// why the argument `"game_"` is there.
+		_, ok := dynlib.initialize_symbols(&api, dll_tmp_path, "game_", "lib")
+		if ok {
+			api.modification_time = mod_time
+			return api, nil
+		}
+		if attempt < MAX_RETRIES - 1 {
+			time.sleep(time.Duration(RETRY_DELAY_MS) * time.Millisecond)
+		}
 	}
-
-	api.modification_time = mod_time
-
-
-	return
+	fmt.printfln("Failed initializing symbols after %d retries", MAX_RETRIES)
+	return Game_API{}, .Unknown
 }
 
 @(private = "file")
