@@ -1,12 +1,15 @@
 package game
 
 import "core:fmt"
+import "grid"
 import "logic"
+import "shape"
 import sapp "sokol/app"
 
 
 LOCALES_DIR :: #config(LOCALES_DIR, "../../build.nosync/locales")
 
+Segment :: [4]int
 
 World :: struct {
 	pasued:           bool,
@@ -16,10 +19,21 @@ World :: struct {
 	camera:           [2]f32,
 	zoom:             f32,
 	// Components
-	gui_position:     logic.Component_Storage(Position), // used to position element in absolute coordinates, think how to add click and other system interaction
 	position:         logic.Component_Storage(Position),
 	velocity:         logic.Component_Storage(Velocity),
 	sprite:           logic.Component_Storage(Sprite),
+	// TODO: STUFF TO REFACTOR?
+	grid:             grid.Grid,
+	segments:         [dynamic]Segment,
+	input:            logic.Component_Storage(Input),
+	jump:             logic.Component_Storage(JumpState),
+	collider:         logic.Component_Storage(shape.Capsule),
+	on_hit:           logic.Component_Storage(proc(_: ^World, src, target: int)),
+	on_hurt:          logic.Component_Storage(proc(_: ^World, src, target: int)),
+	enemy_hurt:       logic.Component_Storage(shape.Capsule),
+	enemy_hit:        logic.Component_Storage(shape.Circle),
+	player_hurt:      logic.Component_Storage(shape.Capsule),
+	player_hit:       logic.Component_Storage(shape.Circle),
 }
 
 world_init :: proc(w: ^World) {
@@ -32,12 +46,8 @@ world_init :: proc(w: ^World) {
 
 
 	// change_scene(w, "build.nosync/dd-000-000.wbin")
+	create_mock_data(w)
 
-
-	player := create_entity(w)
-	logic.add_component(&w.velocity, player, Velocity{1, 0})
-	logic.add_component(&w.position, player, Position{0, 0})
-	logic.add_component(&w.sprite, player, Sprite{uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}})
 }
 
 world_frame :: proc(w: ^World) {
@@ -56,14 +66,6 @@ world_frame :: proc(w: ^World) {
 			w.accumulator -= w.sim_frame_length
 		}
 	}
-}
-
-world_cleanup :: proc(w: ^World) {
-	fmt.println("WORLD cleanup")
-
-	logic.destroy_storage(&w.position)
-	logic.destroy_storage(&w.velocity)
-	logic.destroy_storage(&w.sprite)
 }
 
 
@@ -86,4 +88,35 @@ create_entity :: proc(w: ^World) -> int {
 entity_delete :: proc(w: ^World, entity_id: int) {
 	logic.delete_component(&w.position, entity_id)
 	logic.delete_component(&w.velocity, entity_id)
+	logic.delete_component(&w.sprite, entity_id)
+	logic.delete_component(&w.input, entity_id)
+	logic.delete_component(&w.jump, entity_id)
+	logic.delete_component(&w.collider, entity_id)
+	logic.delete_component(&w.on_hit, entity_id)
+	logic.delete_component(&w.on_hurt, entity_id)
+	logic.delete_component(&w.enemy_hurt, entity_id)
+	logic.delete_component(&w.enemy_hit, entity_id)
+	logic.delete_component(&w.player_hurt, entity_id)
+	logic.delete_component(&w.player_hit, entity_id)
+}
+
+world_cleanup :: proc(w: ^World) {
+	fmt.println("WORLD cleanup")
+
+	logic.destroy_storage(&w.position)
+	logic.destroy_storage(&w.velocity)
+	logic.destroy_storage(&w.sprite)
+	logic.destroy_storage(&w.input)
+	logic.destroy_storage(&w.jump)
+	logic.destroy_storage(&w.collider)
+	logic.destroy_storage(&w.on_hit)
+	logic.destroy_storage(&w.on_hurt)
+	logic.destroy_storage(&w.enemy_hurt)
+	logic.destroy_storage(&w.enemy_hit)
+	logic.destroy_storage(&w.player_hurt)
+	logic.destroy_storage(&w.player_hit)
+
+
+	grid.destroy_grid(&w.grid)
+	delete(w.segments)
 }

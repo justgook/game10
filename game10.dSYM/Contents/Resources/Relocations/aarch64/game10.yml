@@ -1,0 +1,10 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/gook/Library/Mobile Documents/com~apple~CloudDocs/Projects/game10/game10'
+relocations:
+  - { offset: 0x1F, size: 0x8, addend: 0x0, symName: '_bytes::index_byte', symObjAddr: 0x0, symBinAddr: 0x100001AC0, symSize: 0x9C8 }
+  - { offset: 0x74, size: 0x8, addend: 0x0, symName: '_bytes::index_byte', symObjAddr: 0x0, symBinAddr: 0x100001AC0, symSize: 0x9C8 }
+  - { offset: 0x7C, size: 0x8, addend: 0x0, symName: '_bytes::last_index_byte', symObjAddr: 0x9C8, symBinAddr: 0x100002488, symSize: 0x960 }
+  - { offset: 0xD1, size: 0x8, addend: 0x0, symName: '_bytes::last_index_byte', symObjAddr: 0x9C8, symBinAddr: 0x100002488, symSize: 0x960 }
+  - { offset: 0x23A, size: 0x8, addend: 0x0, symName: '_bytes::last_index_byte', symObjAddr: 0x9C8, symBinAddr: 0x100002488, symSize: 0x960 }
+...

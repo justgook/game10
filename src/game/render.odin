@@ -4,9 +4,10 @@ import "../entry"
 import "core:fmt"
 import "core:image/qoi"
 import "core:math/linalg"
+import "render/debug_draw"
 import "render/sprites"
 import "render/tilemap"
-import "render/ui"
+import "shape"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -23,7 +24,6 @@ Render :: struct {
 	world_ortho:              linalg.Matrix4f32,
 
 	// pipelines
-	gui:                      ^ui.Ui_State,
 	world_sprites:            ^sprites.Sprites,
 	tilemap_front:            ^tilemap.Tilemap_Manager,
 	tilemap_back:             ^tilemap.Tilemap_Manager,
@@ -37,7 +37,6 @@ render_init :: proc(r: ^Render) {
 	assert(success, "fail load img")
 	fmt.println("test_img", success, r.tex0)
 
-	r.gui = ui.init_ui()
 	r.world_sprites = sprites.sprites_init()
 	sprites.sprites_set_texture(r.tex0, r.world_sprites)
 
@@ -74,15 +73,18 @@ render_init :: proc(r: ^Render) {
 		colors = {0 = sg.make_view({color_attachment = {image = color_img}})},
 		depth_stencil = sg.make_view({depth_stencil_attachment = {image = depth_img}}),
 	}
+
+
+	when ODIN_DEBUG {
+		debug_state.draw = debug_draw.init_debug_draw()
+	}
+
 }
 
 render_frame :: proc(w: ^World, r: ^Render) {
 	r.world_sprites.count = 0
 	render_sprite(w, r)
-
-	render_menu(w, r)
 	update_ortho(w, r)
-
 
 	/*====================================================================================================*/
 	/*                                          DRAWING                                                   */
@@ -92,9 +94,15 @@ render_frame :: proc(w: ^World, r: ^Render) {
 	/*====================================================================================================*/
 	sg.begin_pass({action = r.draw_default_pass, swapchain = sglue.swapchain()})
 
+
+	when ODIN_DEBUG {
+		debug_frame(w, r)
+		debug_draw.draw(&debug_state.draw, &r.world_ortho)
+	}
+
+
 	sprites.sprites_draw(r.world_sprites, &r.world_ortho)
 
-	ui.draw_ui(r.gui)
 
 	sg.end_pass()
 	/*====================================================================================================*/
@@ -105,7 +113,10 @@ render_frame :: proc(w: ^World, r: ^Render) {
 render_cleanup :: proc(r: ^Render) {
 	fmt.println("RENDER cleanup")
 	sprites.sprites_cleanup(r.world_sprites)
-	ui.destryoy_ui(r.gui)
+
+	when ODIN_DEBUG {
+		debug_draw.destroy_debug_draw(&debug_state.draw)
+	}
 }
 
 render_reloaded :: proc(r: ^Render) {

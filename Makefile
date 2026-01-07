@@ -57,7 +57,9 @@ $(BUILD_DIR)/locales/%/messages.mo: $(ASSETS_DIR)/locales/%/messages.po
 all: $(I18N_SRC)
 	echo $?
 
-
+.PHONY: develop
+develop:
+	odin run . -show-system-calls -- -run -hot -debug
 
 LANG_MAP := es=es_ES.UTF-8 en=en_EN.UTF-8
 get_locale = $(strip \

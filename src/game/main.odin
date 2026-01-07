@@ -3,8 +3,6 @@ package game
 import "../entry"
 import "core:fmt"
 import "core:text/i18n"
-import "render/ui"
-import "render/ui/microui2/textbox"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -54,7 +52,6 @@ game_init :: proc() {
 game_frame :: proc() {
 	world_frame(&g.world)
 	render_frame(&g.world, &g.render)
-	textbox.frame_end(&g.render.gui.text_store)
 	// free_all(context.temp_allocator)
 }
 
@@ -69,8 +66,6 @@ game_event :: proc(e: ^sapp.Event) {
 			force_reset = true
 		}
 	}
-
-	ui.ui_input(g.render.gui, e)
 }
 
 @(export)
