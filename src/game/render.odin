@@ -111,20 +111,41 @@ render_frame :: proc(w: ^World, r: ^Render) {
 }
 
 render_cleanup :: proc(r: ^Render) {
-	fmt.println("RENDER cleanup")
-	sprites.sprites_cleanup(r.world_sprites)
+    fmt.println("RENDER cleanup")
+    sprites.sprites_cleanup(r.world_sprites)
 
-	when ODIN_DEBUG {
-		debug_draw.destroy_debug_draw(&debug_state.draw)
-	}
+    if r.tilemap_front != nil {
+        tilemap.destory_render_tilemap(r.tilemap_front)
+    }
+    if r.tilemap_back != nil {
+        tilemap.destory_render_tilemap(r.tilemap_back)
+    }
+
+    when ODIN_DEBUG {
+        debug_draw.destroy_debug_draw(&debug_state.draw)
+    }
 }
 
 render_reloaded :: proc(r: ^Render) {
-	fmt.println("RENDER reload")
+    fmt.println("RENDER reload")
 
-	sprites.sprites_cleanup(r.world_sprites)
-	r.world_sprites = sprites.sprites_init()
-	sprites.sprites_set_texture(r.tex0, r.world_sprites)
+    sprites.sprites_cleanup(r.world_sprites)
+    r.world_sprites = sprites.sprites_init()
+    sprites.sprites_set_texture(r.tex0, r.world_sprites)
+
+    if r.tilemap_front != nil {
+        tilemap.destory_render_tilemap(r.tilemap_front)
+        r.tilemap_front = nil
+    }
+    if r.tilemap_back != nil {
+        tilemap.destory_render_tilemap(r.tilemap_back)
+        r.tilemap_back = nil
+    }
+
+    when ODIN_DEBUG {
+        debug_draw.destroy_debug_draw(&debug_state.draw)
+        debug_state.draw = debug_draw.init_debug_draw()
+    }
 }
 
 @(private = "file")

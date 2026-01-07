@@ -35,7 +35,7 @@ Game_API :: struct {
 	modification_time: time.Time,
 }
 
-old_game_apis: [dynamic]Game_API
+old_game_api: Maybe(Game_API)  // Only keep one previous API for memory preservation
 game_api: Game_API
 
 main :: proc() {
@@ -56,7 +56,7 @@ main :: proc() {
 		return
 	}
 
-	old_game_apis = make([dynamic]Game_API)
+	old_game_api = nil
 	app_desc := game_api.app_default_desc()
 	app_desc.init_cb = proc "c" () {
 		context = context
@@ -117,13 +117,10 @@ check_reload_dll :: proc() {
 			force_restart = force_restart || game_api.memory_size() != new_game_api.memory_size()
 
 			if !force_restart {
-				// This does the normal hot reload
+				// Keep previous API to preserve memory references (World, Render structs)
+				// The old DLL is unloaded on next reload or on cleanup
+				old_game_api = game_api
 
-				// Note that we don't unload the old game APIs because that
-				// would unload the DLL. The DLL can contain stored info
-				// such as string literals. The old DLLs are only unloaded
-				// on a full reset or on shutdown.
-				append(&old_game_apis, game_api)
 				game_memory := game_api.memory()
 				game_api = new_game_api
 				game_api.hot_reloaded(game_memory)
@@ -149,14 +146,9 @@ check_reload_dll :: proc() {
 
 @(private = "file")
 unload_all :: proc(final := false) {
-	for &g in old_game_apis {
-		unload_game_api(&g)
-	}
-
-	if final {
-		delete(old_game_apis)
-	} else {
-		clear(&old_game_apis)
+	if old_game_api != nil {
+		unload_game_api(&old_game_api.(Game_API))
+		old_game_api = nil
 	}
 
 	unload_game_api(&game_api)

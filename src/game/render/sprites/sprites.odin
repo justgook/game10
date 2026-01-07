@@ -26,7 +26,8 @@ Sprites :: struct {
 }
 
 sprites_cleanup :: proc(manager: ^Sprites) {
-	free(manager)
+    sg.destroy_pipeline(manager.pip)
+    free(manager)
 }
 
 sprites_set_texture :: proc(tex0: sg.Image, manager: ^Sprites) {

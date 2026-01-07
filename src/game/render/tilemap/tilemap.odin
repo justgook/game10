@@ -26,7 +26,8 @@ Tilemap_Instance :: struct {
 }
 
 destory_render_tilemap :: proc(manager: ^Tilemap_Manager) {
-	free(manager)
+    sg.destroy_pipeline(manager.pip)
+    free(manager)
 }
 
 tilemap_set_texture :: proc(tex0: sg.Image, manager: ^Tilemap_Manager) {

@@ -41,8 +41,8 @@ init_debug_draw :: proc() -> (dd: DebugDraw) {
 }
 
 destroy_debug_draw :: proc(dd: ^DebugDraw) {
-	delete(dd.vertices)
-	//free(dd)
+    sg.destroy_pipeline(dd.pip)
+    delete(dd.vertices)
 }
 
 add_vector :: proc(state: ^DebugDraw, start, end: [2]f32, color: [4]f32) {
