@@ -11,6 +11,7 @@ Q=
 WGET:=wget
 else
 Q=@
+
 MAKEFLAGS += --no-print-directory
 WGET:=wget -q --show-progress
 endif
@@ -56,14 +57,29 @@ $(BUILD_DIR)/locales/%/messages.mo: $(ASSETS_DIR)/locales/%/messages.po
 .PHONY: all
 all: $(I18N_SRC)
 	echo $?
+.PHONY: develop
+develop:
+	@bash -c '\
+		trap "kill 0" INT TERM; \
+		odin run . -show-system-calls -- -run -hot -debug \
+			| sed -u "s/^/\x1b[32m[run]\x1b[0m /" & \
+		find $(I18N_SRC) | entr -p sh -c "odin run . -show-system-calls -- -hot -debug" \
+			| sed -u "s/^/\x1b[36m[reload]\x1b[0m /" & \
+		wait \
+	'
 
 .PHONY: run
 run:
 	odin run . -show-system-calls -- -run -hot -debug
 
-.PHONY: rebuild
-rebuild:
-	odin run . -show-system-calls -- -hot -debug
+.PHONY: reload
+reload:
+	$(Q)odin run . -show-system-calls -- -hot -debug
+
+.PHONY: watch
+watch:
+	find $(I18N_SRC) | entr -p sh -c "odin run . -show-system-calls -- -hot -debug"
+
 LANG_MAP := es=es_ES.UTF-8 en=en_EN.UTF-8
 get_locale = $(strip \
     $(or \
