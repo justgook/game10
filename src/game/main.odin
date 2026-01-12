@@ -108,6 +108,16 @@ game_hot_reloaded :: proc(mem: rawptr) {
 	fmt.println("game_hot_reloaded")
 	render_reloaded(&g.render)
 
+
+	// Reinitialize nuklear (its internal state doesn't survive hot reload)
+	// Note: We can't call shutdown() because the old state is gone.
+	// Just call init() - it will create new resources (old ones will leak
+	// but that's acceptable for hot reload during development)
+	fmt.println("RENDER reload: reinitializing menu...")
+	menu.init()
+	fmt.println("RENDER reload: menu initialized")
+
+
 	// Here you can also set your own global variables. A good idea is to make
 	// your global variables into pointers that point to something inside
 	// `g`. Then that state carries over between hot reloads.
