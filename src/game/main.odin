@@ -53,6 +53,7 @@ game_frame :: proc() {
 	world_frame(&g.world)
 	render_frame(&g.world, &g.render)
 	// free_all(context.temp_allocator)
+	reset_input_state_for_next_frame()
 }
 
 
@@ -64,8 +65,12 @@ game_event :: proc(e: ^sapp.Event) {
 	case .KEY_DOWN:
 		if e.key_code == .F6 {
 			force_reset = true
+
+			return
 		}
 	}
+
+	globalEventHandler(e)
 }
 
 @(export)

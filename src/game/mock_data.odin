@@ -13,6 +13,7 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(&w.collider, player, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.input, player, Input{})
 	logic.add_component(&w.jump, player, JumpState{})
+	logic.add_component(&w.brain, player, Brain{})
 
 
 	append(&w.segments, Segment{32 * UNIT, 64 * UNIT, 128 * UNIT, 64 * UNIT})
