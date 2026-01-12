@@ -15,6 +15,6 @@ render_sprite :: proc(w: ^World, r: ^Render) {
 		target.uv = s.uv
 		target.pos = to_pixelf(pos^ + s.offset)
 		target.opacity = 1
-		target.size = {18 * 10, 30 * 10}
+		target.size = {18, 30}
 	}
 }

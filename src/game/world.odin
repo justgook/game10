@@ -34,6 +34,7 @@ World :: struct {
 	enemy_hit:        logic.Component_Storage(shape.Circle),
 	player_hurt:      logic.Component_Storage(shape.Capsule),
 	player_hit:       logic.Component_Storage(shape.Circle),
+	brain:            logic.Component_Storage(Brain),
 }
 
 world_init :: proc(w: ^World) {
@@ -63,6 +64,9 @@ world_frame :: proc(w: ^World) {
 
 		for (w.accumulator >= w.sim_frame_length) {
 			sys_velocity(w)
+			sys_brain(w)
+			sys_movement(w)
+
 			w.accumulator -= w.sim_frame_length
 		}
 	}
@@ -98,6 +102,7 @@ entity_delete :: proc(w: ^World, entity_id: int) {
 	logic.delete_component(&w.enemy_hit, entity_id)
 	logic.delete_component(&w.player_hurt, entity_id)
 	logic.delete_component(&w.player_hit, entity_id)
+	logic.delete_component(&w.brain, entity_id)
 }
 
 world_cleanup :: proc(w: ^World) {
@@ -115,6 +120,7 @@ world_cleanup :: proc(w: ^World) {
 	logic.destroy_storage(&w.enemy_hit)
 	logic.destroy_storage(&w.player_hurt)
 	logic.destroy_storage(&w.player_hit)
+	logic.destroy_storage(&w.brain)
 
 
 	grid.destroy_grid(&w.grid)
