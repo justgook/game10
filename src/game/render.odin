@@ -1,9 +1,11 @@
 package game
 
 import "../entry"
+import "core:c"
 import "core:fmt"
 import "core:image/qoi"
 import "core:math/linalg"
+import "logic"
 import "menu"
 import "render/debug_draw"
 import "render/sprites"
@@ -83,8 +85,12 @@ render_init :: proc(r: ^Render) {
 }
 
 render_frame :: proc(w: ^World, r: ^Render) {
+	// Prepare HUD data
+	hud_data := prepare_hud_data(w, r)
+	
+	// Start nuklear frame and draw UI
 	ctx := menu.new_frame()
-	menu.draw(ctx)
+	menu.draw_with_hud(ctx, hud_data)
 
 	r.world_sprites.count = 0
 	render_sprite(w, r)
@@ -133,6 +139,9 @@ render_cleanup :: proc(r: ^Render) {
 
 render_reloaded :: proc(r: ^Render) {
 	fmt.println("RENDER reload")
+
+	// Reinitialize nuklear (its internal state doesn't survive hot reload)
+	menu.init()
 
 	sprites.sprites_cleanup(r.world_sprites)
 	r.world_sprites = sprites.sprites_init()
@@ -186,4 +195,52 @@ load_test_img :: proc(filename: string, r: ^Render) -> (ok: bool) {
 	r.tex0 = sg.make_image(desc)
 
 	return true
+}
+
+@(private = "file")
+prepare_hud_data :: proc(w: ^World, r: ^Render) -> menu.Hud_Data {
+	hud: menu.Hud_Data
+
+	// Try to find player entity (entity ID 0 is usually player in mock data)
+	// This is a simple approach - you might want to track player ID in World
+	player_id := 0
+
+	// Get player position
+	if pos, ok := logic.get_component(&w.position, player_id); ok {
+		hud.player_pos_x = c.int(pos.x)
+		hud.player_pos_y = c.int(pos.y)
+	}
+
+	// Get player velocity
+	if vel, ok := logic.get_component(&w.velocity, player_id); ok {
+		hud.player_vel_x = c.int(vel.x)
+		hud.player_vel_y = c.int(vel.y)
+	}
+
+	// Get jump state
+	if jump, ok := logic.get_component(&w.jump, player_id); ok {
+		hud.is_grounded = c.int(jump.can_jump ? 1 : 0)
+		hud.is_rising = c.int(jump.is_rising ? 1 : 0)
+		hud.is_facing_right = c.int(jump.facing_right ? 1 : 0)
+		hud.jump_hold_frames = c.int(jump.jump_hold_frames)
+	}
+
+	// World info
+	hud.entity_count = c.int(w.next_entity_id) // Total entities created
+	hud.paused = c.int(w.pasued ? 1 : 0)
+
+	// Camera
+	hud.camera_x = w.camera.x
+	hud.camera_y = w.camera.y
+	hud.zoom = w.zoom
+
+	// Performance
+	hud.fps = 1.0 / f32(sapp.frame_duration())
+	hud.frame_time_ms = f32(sapp.frame_duration() * 1000.0)
+
+	// Window size
+	hud.window_width = sapp.width()
+	hud.window_height = sapp.height()
+
+	return hud
 }

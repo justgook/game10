@@ -70,11 +70,21 @@ game_event :: proc(e: ^sapp.Event) {
 	case .KEY_DOWN:
 		if e.key_code == .F6 {
 			force_reset = true
-
+			return
+		}
+		// Toggle menu with ESC key
+		if e.key_code == .ESCAPE {
+			menu.toggle()
+			return
+		}
+		// Toggle debug HUD with F3 key
+		if e.key_code == .F3 {
+			menu.toggle_debug_hud()
 			return
 		}
 	}
 
+	// Let menu handle event if it's visible
 	if menu.handle_event(e) {
 		return // UI consumed the event
 	}
@@ -106,17 +116,7 @@ game_memory_size :: proc() -> int {
 game_hot_reloaded :: proc(mem: rawptr) {
 	g = (^Game_Memory)(mem)
 	fmt.println("game_hot_reloaded")
-	render_reloaded(&g.render)
-
-
-	// Reinitialize nuklear (its internal state doesn't survive hot reload)
-	// Note: We can't call shutdown() because the old state is gone.
-	// Just call init() - it will create new resources (old ones will leak
-	// but that's acceptable for hot reload during development)
-	fmt.println("RENDER reload: reinitializing menu...")
-	menu.init()
-	fmt.println("RENDER reload: menu initialized")
-
+	render_reloaded(&g.render) // This handles menu reinit
 
 	// Here you can also set your own global variables. A good idea is to make
 	// your global variables into pointers that point to something inside

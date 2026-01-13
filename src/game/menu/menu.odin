@@ -10,10 +10,10 @@ package menu
 //   4. In render_frame(): ctx := menu.new_frame(); menu.draw(ctx); ... menu.render(w, h)
 //   5. In game_cleanup(): menu.shutdown()
 
-import "core:c"
-import sg "../sokol/gfx"
 import sapp "../sokol/app"
+import sg "../sokol/gfx"
 import slog "../sokol/log"
+import "core:c"
 
 // ============ Build Configuration ============
 // Matches sokol bindings pattern
@@ -27,75 +27,75 @@ USE_DLL :: #config(SOKOL_DLL, false)
 // Platform-specific library imports following sokol pattern
 
 when ODIN_OS == .Windows {
-    when USE_GL {
-        when DEBUG {
-            foreign import snk_clib { "lib/sokol_nuklear_windows_x64_gl_debug.lib" }
-            foreign import menu_clib { "lib/menu_windows_x64_gl_debug.lib" }
-        } else {
-            foreign import snk_clib { "lib/sokol_nuklear_windows_x64_gl_release.lib" }
-            foreign import menu_clib { "lib/menu_windows_x64_gl_release.lib" }
-        }
-    } else {
-        when DEBUG {
-            foreign import snk_clib { "lib/sokol_nuklear_windows_x64_d3d11_debug.lib" }
-            foreign import menu_clib { "lib/menu_windows_x64_d3d11_debug.lib" }
-        } else {
-            foreign import snk_clib { "lib/sokol_nuklear_windows_x64_d3d11_release.lib" }
-            foreign import menu_clib { "lib/menu_windows_x64_d3d11_release.lib" }
-        }
-    }
+	when USE_GL {
+		when DEBUG {
+			foreign import snk_clib "lib/sokol_nuklear_windows_x64_gl_debug.lib"
+			foreign import menu_clib "lib/menu_windows_x64_gl_debug.lib"
+		} else {
+			foreign import snk_clib "lib/sokol_nuklear_windows_x64_gl_release.lib"
+			foreign import menu_clib "lib/menu_windows_x64_gl_release.lib"
+		}
+	} else {
+		when DEBUG {
+			foreign import snk_clib "lib/sokol_nuklear_windows_x64_d3d11_debug.lib"
+			foreign import menu_clib "lib/menu_windows_x64_d3d11_debug.lib"
+		} else {
+			foreign import snk_clib "lib/sokol_nuklear_windows_x64_d3d11_release.lib"
+			foreign import menu_clib "lib/menu_windows_x64_d3d11_release.lib"
+		}
+	}
 } else when ODIN_OS == .Darwin {
-    when USE_GL {
-        when ODIN_ARCH == .arm64 {
-            when DEBUG {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_arm64_gl_debug.a" }
-                foreign import menu_clib { "lib/menu_macos_arm64_gl_debug.a" }
-            } else {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_arm64_gl_release.a" }
-                foreign import menu_clib { "lib/menu_macos_arm64_gl_release.a" }
-            }
-        } else {
-            when DEBUG {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_x64_gl_debug.a" }
-                foreign import menu_clib { "lib/menu_macos_x64_gl_debug.a" }
-            } else {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_x64_gl_release.a" }
-                foreign import menu_clib { "lib/menu_macos_x64_gl_release.a" }
-            }
-        }
-    } else {
-        when ODIN_ARCH == .arm64 {
-            when DEBUG {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_arm64_metal_debug.a" }
-                foreign import menu_clib { "lib/menu_macos_arm64_metal_debug.a" }
-            } else {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_arm64_metal_release.a" }
-                foreign import menu_clib { "lib/menu_macos_arm64_metal_release.a" }
-            }
-        } else {
-            when DEBUG {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_x64_metal_debug.a" }
-                foreign import menu_clib { "lib/menu_macos_x64_metal_debug.a" }
-            } else {
-                foreign import snk_clib { "lib/sokol_nuklear_macos_x64_metal_release.a" }
-                foreign import menu_clib { "lib/menu_macos_x64_metal_release.a" }
-            }
-        }
-    }
+	when USE_GL {
+		when ODIN_ARCH == .arm64 {
+			when DEBUG {
+				foreign import snk_clib "lib/sokol_nuklear_macos_arm64_gl_debug.a"
+				foreign import menu_clib "lib/menu_macos_arm64_gl_debug.a"
+			} else {
+				foreign import snk_clib "lib/sokol_nuklear_macos_arm64_gl_release.a"
+				foreign import menu_clib "lib/menu_macos_arm64_gl_release.a"
+			}
+		} else {
+			when DEBUG {
+				foreign import snk_clib "lib/sokol_nuklear_macos_x64_gl_debug.a"
+				foreign import menu_clib "lib/menu_macos_x64_gl_debug.a"
+			} else {
+				foreign import snk_clib "lib/sokol_nuklear_macos_x64_gl_release.a"
+				foreign import menu_clib "lib/menu_macos_x64_gl_release.a"
+			}
+		}
+	} else {
+		when ODIN_ARCH == .arm64 {
+			when DEBUG {
+				foreign import snk_clib "lib/sokol_nuklear_macos_arm64_metal_debug.a"
+				foreign import menu_clib "lib/menu_macos_arm64_metal_debug.a"
+			} else {
+				foreign import snk_clib "lib/sokol_nuklear_macos_arm64_metal_release.a"
+				foreign import menu_clib "lib/menu_macos_arm64_metal_release.a"
+			}
+		} else {
+			when DEBUG {
+				foreign import snk_clib "lib/sokol_nuklear_macos_x64_metal_debug.a"
+				foreign import menu_clib "lib/menu_macos_x64_metal_debug.a"
+			} else {
+				foreign import snk_clib "lib/sokol_nuklear_macos_x64_metal_release.a"
+				foreign import menu_clib "lib/menu_macos_x64_metal_release.a"
+			}
+		}
+	}
 } else when ODIN_OS == .Linux {
-    when DEBUG {
-        foreign import snk_clib { "lib/sokol_nuklear_linux_x64_gl_debug.a", "system:GL", "system:dl", "system:pthread" }
-        foreign import menu_clib { "lib/menu_linux_x64_gl_debug.a" }
-    } else {
-        foreign import snk_clib { "lib/sokol_nuklear_linux_x64_gl_release.a", "system:GL", "system:dl", "system:pthread" }
-        foreign import menu_clib { "lib/menu_linux_x64_gl_release.a" }
-    }
+	when DEBUG {
+		foreign import snk_clib {"lib/sokol_nuklear_linux_x64_gl_debug.a", "system:GL", "system:dl", "system:pthread"}
+		foreign import menu_clib "lib/menu_linux_x64_gl_debug.a"
+	} else {
+		foreign import snk_clib {"lib/sokol_nuklear_linux_x64_gl_release.a", "system:GL", "system:dl", "system:pthread"}
+		foreign import menu_clib "lib/menu_linux_x64_gl_release.a"
+	}
 } else when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
-    // For WASM, feed sokol_nuklear_wasm_gl_*.a and menu_wasm_gl_*.a into emscripten
-    foreign import snk_clib { "env.o" }
-    foreign import menu_clib { "env.o" }
+	// For WASM, feed sokol_nuklear_wasm_gl_*.a and menu_wasm_gl_*.a into emscripten
+	foreign import snk_clib "env.o"
+	foreign import menu_clib "env.o"
 } else {
-    #panic("This OS is currently not supported")
+	#panic("This OS is currently not supported")
 }
 
 // ============ Types ============
@@ -105,81 +105,123 @@ Nk_Context :: rawptr
 
 // Memory allocator override
 Allocator :: struct {
-    alloc_fn:  proc "c" (size: c.size_t, user_data: rawptr) -> rawptr,
-    free_fn:   proc "c" (ptr: rawptr, user_data: rawptr),
-    user_data: rawptr,
+	alloc_fn:  proc "c" (size: c.size_t, user_data: rawptr) -> rawptr,
+	free_fn:   proc "c" (ptr: rawptr, user_data: rawptr),
+	user_data: rawptr,
 }
 
 // Logger callback
 Logger :: struct {
-    func: proc "c" (
-        tag: cstring,
-        log_level: u32,
-        log_item_id: u32,
-        message_or_null: cstring,
-        line_nr: u32,
-        filename_or_null: cstring,
-        user_data: rawptr,
-    ),
-    user_data: rawptr,
+	func:      proc "c" (
+		tag: cstring,
+		log_level: u32,
+		log_item_id: u32,
+		message_or_null: cstring,
+		line_nr: u32,
+		filename_or_null: cstring,
+		user_data: rawptr,
+	),
+	user_data: rawptr,
 }
 
 // sokol_nuklear setup descriptor
 Desc :: struct {
-    max_vertices:            c.int,            // default: 65536
-    image_pool_size:         c.int,            // default: 256
-    color_format:            sg.Pixel_Format,  // default: SG_PIXELFORMAT_RGBA8
-    depth_format:            sg.Pixel_Format,  // default: SG_PIXELFORMAT_DEPTHSTENCIL
-    sample_count:            c.int,            // default: 1
-    dpi_scale:               f32,              // default: 1.0
-    no_default_font:         bool,             // default: false
-    enable_set_mouse_cursor: bool,             // default: false
-    allocator:               Allocator,
-    logger:                  Logger,
+	max_vertices:            c.int, // default: 65536
+	image_pool_size:         c.int, // default: 256
+	color_format:            sg.Pixel_Format, // default: SG_PIXELFORMAT_RGBA8
+	depth_format:            sg.Pixel_Format, // default: SG_PIXELFORMAT_DEPTHSTENCIL
+	sample_count:            c.int, // default: 1
+	dpi_scale:               f32, // default: 1.0
+	no_default_font:         bool, // default: false
+	enable_set_mouse_cursor: bool, // default: false
+	allocator:               Allocator,
+	logger:                  Logger,
 }
 
 // Handle for custom images
 Image :: struct {
-    id: u32,
+	id: u32,
 }
 
 // Image descriptor for snk_make_image
 Image_Desc :: struct {
-    texture_view: sg.View,
-    sampler:      sg.Sampler,
+	texture_view: sg.View,
+	sampler:      sg.Sampler,
+}
+
+// HUD data passed to C menu code
+// Must match the HudData struct in menu.c exactly
+Hud_Data :: struct {
+	// Player state
+	player_pos_x:     c.int,
+	player_pos_y:     c.int,
+	player_vel_x:     c.int,
+	player_vel_y:     c.int,
+
+	// Jump state
+	is_grounded:      c.int,
+	is_rising:        c.int,
+	is_facing_right:  c.int,
+	jump_hold_frames: c.int,
+
+	// World info
+	entity_count:     c.int,
+	paused:           c.int,
+
+	// Camera
+	camera_x:         f32,
+	camera_y:         f32,
+	zoom:             f32,
+
+	// Performance
+	fps:              f32,
+	frame_time_ms:    f32,
+
+	// Window size
+	window_width:     c.int,
+	window_height:    c.int,
 }
 
 // ============ sokol_nuklear Functions ============
 
 @(default_calling_convention = "c", link_prefix = "snk_")
 foreign snk_clib {
-    // Initialize sokol_nuklear
-    setup :: proc(#by_ptr desc: Desc) ---
+	// Initialize sokol_nuklear
+	setup :: proc(#by_ptr desc: Desc) ---
 
-    // Call at start of frame, returns nuklear context for UI building
-    new_frame :: proc() -> Nk_Context ---
+	// Call at start of frame, returns nuklear context for UI building
+	new_frame :: proc() -> Nk_Context ---
 
-    // Render the UI (call before sg.end_pass())
-    render :: proc(width, height: c.int) ---
+	// Render the UI (call before sg.end_pass())
+	render :: proc(width, height: c.int) ---
 
-    // Shutdown sokol_nuklear
-    shutdown :: proc() ---
+	// Shutdown sokol_nuklear
+	shutdown :: proc() ---
 
-    // Handle input event, returns true if event was consumed by UI
-    handle_event :: proc(event: ^sapp.Event) -> bool ---
+	// Handle input event, returns true if event was consumed by UI
+	handle_event :: proc(event: ^sapp.Event) -> bool ---
 
-    // Image management
-    make_image :: proc(#by_ptr desc: Image_Desc) -> Image ---
-    destroy_image :: proc(img: Image) ---
-    query_image_desc :: proc(img: Image) -> Image_Desc ---
+	// Image management
+	make_image :: proc(#by_ptr desc: Image_Desc) -> Image ---
+	destroy_image :: proc(img: Image) ---
+	query_image_desc :: proc(img: Image) -> Image_Desc ---
 }
 
 // ============ Menu Functions (from menu.c) ============
 
 @(default_calling_convention = "c", link_prefix = "menu_")
 foreign menu_clib {
-    // Draw the game menu UI
-    draw :: proc(ctx: Nk_Context) ---
+	// Draw the game menu UI (legacy, no HUD)
+	draw :: proc(ctx: Nk_Context) ---
+
+	// Draw with HUD data
+	draw_with_hud :: proc(ctx: Nk_Context, #by_ptr hud_data: Hud_Data) ---
+
+	// Menu visibility controls
+	toggle :: proc() ---
+	toggle_debug_hud :: proc() ---
+	set_visible :: proc(visible: c.int) ---
+	is_visible :: proc() -> c.int ---
 }
 
 // ============ Convenience Functions ============
@@ -187,8 +229,5 @@ foreign menu_clib {
 // Initialize sokol_nuklear with sensible defaults
 // Call this in game_init() after sg.setup()
 init :: proc() {
-    setup({
-        dpi_scale = sapp.dpi_scale(),
-        logger = {func = slog.func},
-    })
+	setup({dpi_scale = sapp.dpi_scale(), logger = {func = slog.func}})
 }
