@@ -2,7 +2,6 @@ package main
 
 import "core:flags"
 import "core:fmt"
-import "core:net"
 import os "core:os/os2"
 import "core:path/filepath"
 import "core:strings"

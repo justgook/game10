@@ -61,9 +61,9 @@ all: $(I18N_SRC)
 develop:
 	@bash -c '\
 		trap "kill 0" INT TERM; \
-		odin run . -show-system-calls -- -run -hot -debug \
+		odin run . -out:${BUILD_DIR}/builder -- -run -hot -debug\
 			| sed -u "s/^/\x1b[32m[run]\x1b[0m /" & \
-		find $(I18N_SRC) | entr -p sh -c "odin run . -show-system-calls -- -hot -debug" \
+		find $(I18N_SRC) | entr -p sh -c "odin run ./src -show-system-calls -- -hot -debug" \
 			| sed -u "s/^/\x1b[36m[reload]\x1b[0m /" & \
 		wait \
 	'
