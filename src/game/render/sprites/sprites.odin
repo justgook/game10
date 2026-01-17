@@ -10,12 +10,13 @@ BASE_VERTICES := [?][2]f32{{-.5, -.5}, {-.5, .5}, {.5, -.5}, {.5, .5}}
 BASE_INDICES := [?]u16{0, 1, 2, 2, 1, 3}
 
 Sprite_Instance :: struct {
-	pos:     [2]f32,
-	z:       f32,
-	opacity: f32,
-	flip:    u8,
-	size:    [2]f32,
-	uv:      [4]f32,
+	pos:       [2]f32,
+	z:         f32,
+	opacity:   f32,
+	flip:      u8,
+	size:      [2]f32,
+	uv:        [4]f32,
+	color_add: [4]f32,  // RGB + intensity for blink/flash effects
 }
 
 Sprites :: struct {
@@ -74,6 +75,7 @@ sprites_init :: proc() -> ^Sprites {
 				ATTR_sprite_inst_flip_flags = {format = .UBYTE4, buffer_index = 1},
 				ATTR_sprite_inst_size = {format = .FLOAT2, buffer_index = 1},
 				ATTR_sprite_inst_uv = {format = .FLOAT4, buffer_index = 1},
+				ATTR_sprite_inst_color_add = {format = .FLOAT4, buffer_index = 1},
 			},
 		},
 	}

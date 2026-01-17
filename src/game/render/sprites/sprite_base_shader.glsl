@@ -15,10 +15,12 @@ in float inst_opacity;
 in uint inst_flip_flags;
 in vec2 inst_size;
 in vec4 inst_uv;
+in vec4 inst_color_add;  // Additive color for blink/flash effects (RGB + intensity)
 
 
 out vec2 fragTexCoord;
 out float opacity;
+out vec4 colorAdd;
 
 
 
@@ -39,6 +41,7 @@ void main() {
     gl_Position = ortho * vec4(pos_in_px, inst_z, 1.0);
     // gl_Position = vec4(pos, inst_z, 1.0);
     opacity = inst_opacity;
+    colorAdd = inst_color_add;
 
     // Center UV coordinates before transformation
     vec2 uv_centered = pos;
@@ -57,6 +60,7 @@ layout(binding=0) uniform sampler default_sampler;
 
 in vec2 fragTexCoord;
 in float opacity;
+in vec4 colorAdd;
 
 out vec4 frag_color;
 void main() {
@@ -66,6 +70,10 @@ void main() {
         discard;
     }
 
+    // Apply additive color (for blink/flash effects)
+    // colorAdd.rgb is the color to add, colorAdd.a is the intensity
+    texColor.rgb += colorAdd.rgb * colorAdd.a;
+    
     frag_color = texColor;
 }
 @end

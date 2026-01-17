@@ -3,6 +3,7 @@ package game
 import "camera"
 import "core:fmt"
 import "core:text/i18n"
+import "logic"
 import menu "menu"
 import sapp "sokol/app"
 import sg "sokol/gfx"
@@ -111,6 +112,42 @@ game_event :: proc(e: ^sapp.Event) {
 					camera.camera_set_zoom(&g.world.cam, 2.0)
 				}
 				fmt.printfln("Camera zoom set to %v", g.world.cam.zoom)
+				return
+			}
+			if e.key_code == .F7 {
+				// Test blink effect on player
+				if blink, ok := logic.get_component(&g.world.blink, g.world.player_entity); ok {
+					blink_white(blink)
+					fmt.println("Blink triggered on player")
+				}
+				return
+			}
+			if e.key_code == .F8 {
+				// Test red blink (damage)
+				if blink, ok := logic.get_component(&g.world.blink, g.world.player_entity); ok {
+					blink_red(blink)
+					fmt.println("Red blink triggered on player")
+				}
+				return
+			}
+			if e.key_code == .F9 {
+				// Test sprite shake on player
+				if shake, ok := logic.get_component(&g.world.sprite_shake, g.world.player_entity); ok {
+					sprite_shake_medium(shake)
+					fmt.println("Sprite shake triggered on player")
+				}
+				return
+			}
+			if e.key_code == .F10 {
+				// Test screen flash (yellow - shooting style)
+				screen_flash_shoot(&g.world.screen_flash)
+				fmt.println("Screen flash triggered")
+				return
+			}
+			if e.key_code == .F11 {
+				// Test screen flash (white - impact style)
+				screen_flash_white(&g.world.screen_flash)
+				fmt.println("Screen flash (white) triggered")
 				return
 			}
 		}

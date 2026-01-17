@@ -16,9 +16,9 @@ This document outlines the features to implement from the [deepnight/gamefeel](h
 
 ### Phase 2: Visual Feedback
 - [x] **2.1 Squash & Stretch** - Sprite distortion on events
-- [ ] **2.2 Entity Blink** - Flash on damage
-- [ ] **2.3 Sprite Shake** - Per-entity shake
-- [ ] **2.4 Screen Flash** - Full-screen color flash
+- [x] **2.2 Entity Blink** - Flash on damage
+- [x] **2.3 Sprite Shake** - Per-entity shake
+- [x] **2.4 Screen Flash** - Full-screen color flash
 
 ### Phase 3: Particles
 - [ ] **3.1 GPU Particle System** - Pooled particles with physics
@@ -284,37 +284,136 @@ squash_set_preserve_volume(&squash, 0.7)  // Auto-calculates Y
 ---
 
 ### 2.2 Entity Blink
-**Priority**: MEDIUM | **Status**: Pending
+**Priority**: MEDIUM | **Status**: ✅ DONE
 
 > "Produce a short white flash on entities when bullets hit."
 
 Immediate visual feedback for damage.
 
-**Components to create**:
-- `BlinkEffect` - Color overlay with decay
+**Location**: `src/game/blink.odin`, `src/game/sys_blink.odin`
+
+**How it works**:
+
+The Blink component adds a color to the sprite that decays over time. This creates a flash effect when entities are hit.
+
+**Key structures**:
+```odin
+Blink :: struct {
+    color: [3]f32,     // RGB color to add (0-1 range)
+    intensity: f32,    // Current intensity (0-1, decays over time)
+    keep_frames: int,  // Frames to keep full intensity before decay
+}
+```
+
+**Shader changes**:
+- Added `color_add: [4]f32` to `Sprite_Instance` struct
+- Shader adds `colorAdd.rgb * colorAdd.a` to final pixel color
+
+**Usage**:
+```odin
+// Add component to entity
+logic.add_component(&w.blink, entity_id, blink_init())
+
+// Trigger blink effects
+blink_white(&blink)                    // White flash (damage)
+blink_red(&blink)                      // Red flash (critical)
+blink_blue(&blink)                     // Blue flash (heal/buff)
+blink_trigger(&blink, r, g, b, frames) // Custom color
+```
+
+**Debug controls** (debug builds only):
+- **F7**: Test white blink on player
+- **F8**: Test red blink on player
 
 ---
 
 ### 2.3 Sprite Shake
-**Priority**: MEDIUM | **Status**: Pending
+**Priority**: MEDIUM | **Status**: ✅ DONE
 
 Per-entity shake effect, independent of camera.
 
-**Components to create**:
-- `SpriteShake` - Shake power X/Y with duration
+**Location**: `src/game/sprite_shake.odin`, `src/game/sys_sprite_shake.odin`
+
+**How it works**:
+
+The SpriteShake component offsets the sprite position using sin/cos waves that decay over time. Each entity has a random seed for variation.
+
+**Key structures**:
+```odin
+SpriteShake :: struct {
+    power_x:     f32,   // Maximum X offset in pixels
+    power_y:     f32,   // Maximum Y offset in pixels
+    duration:    f32,   // Total duration in seconds
+    elapsed:     f32,   // Time elapsed
+    seed:        f32,   // Random seed for variation
+}
+```
+
+**Usage**:
+```odin
+// Add component to entity
+logic.add_component(&w.sprite_shake, entity_id, sprite_shake_init())
+
+// Trigger shake effects
+sprite_shake_light(&shake)                    // 2px, 0.2s
+sprite_shake_medium(&shake)                   // 4px, 0.3s
+sprite_shake_heavy(&shake)                    // 8px, 0.4s
+sprite_shake_horizontal(&shake, power)        // X only
+sprite_shake_vertical(&shake, power)          // Y only
+sprite_shake_trigger(&shake, px, py, duration) // Custom
+```
+
+**Debug controls** (debug builds only):
+- **F9**: Test sprite shake on player
 
 ---
 
 ### 2.4 Screen Flash
-**Priority**: LOW | **Status**: Pending
+**Priority**: LOW | **Status**: ✅ DONE
 
 > "Produce a screen yellow flash when player shoots."
 
 Full-screen color overlay for impactful moments.
 
-**Implementation Notes**:
-- Render colored quad over everything
-- Fade out quickly (~0.1s)
+**Location**: `src/game/screen_flash.odin`, `src/game/render/screen_flash/`
+
+**How it works**:
+
+The ScreenFlash is a global effect (not per-entity) that renders a fullscreen colored quad with additive blending. It fades out over a configurable duration.
+
+**Key structures**:
+```odin
+ScreenFlash :: struct {
+    color:         [3]f32,  // RGB color (0-1 range)
+    alpha:         f32,     // Current alpha (decays over time)
+    duration:      f32,     // Total duration in seconds
+    elapsed:       f32,     // Time elapsed
+    initial_alpha: f32,     // Starting alpha for interpolation
+}
+```
+
+**Shader**: Uses a dedicated fullscreen triangle shader with additive blending (`src/game/render/screen_flash/`). No vertex buffer needed - positions generated from vertex ID.
+
+**Usage**:
+```odin
+// Trigger flash effects
+screen_flash_shoot(&w.screen_flash)   // Yellow flash (shooting) - 0xffcc00, alpha 0.04
+screen_flash_white(&w.screen_flash)   // White flash (impact)
+screen_flash_red(&w.screen_flash)     // Red flash (critical/danger)
+screen_flash_blue(&w.screen_flash)    // Blue flash (special ability)
+
+// Custom flash
+screen_flash_trigger(&w.screen_flash, r, g, b, alpha, duration)
+```
+
+**Integration points**:
+- `world.odin`: `ScreenFlash` stored in World struct (global, not component)
+- `world_frame()`: Updates flash every frame (not fixed timestep)
+- `render.odin`: Draws after sprites, before UI with additive blending
+
+**Debug controls** (debug builds only):
+- **F10**: Test yellow screen flash (shooting style)
+- **F11**: Test white screen flash (impact style)
 
 ---
 
@@ -574,13 +673,13 @@ Phase 1: Foundation (do first)
   1.3 Input Buffering ✅ DONE
   1.4 Coyote Time ✅ DONE
 
-Phase 2: Visual Feedback
+Phase 2: Visual Feedback ✅ COMPLETE
   2.1 Squash & Stretch ✅ DONE
-  2.2 Entity Blink ← NEXT
-  2.3 Sprite Shake
-  2.4 Screen Flash
+  2.2 Entity Blink ✅ DONE
+  2.3 Sprite Shake ✅ DONE
+  2.4 Screen Flash ✅ DONE
 
-Phase 3: Particles
+Phase 3: Particles ← NEXT
   3.1 GPU Particle System
 
 Phase 4: Combat (if game has combat)

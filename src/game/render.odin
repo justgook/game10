@@ -9,6 +9,7 @@ import "core:math/linalg"
 import "logic"
 import "menu"
 import "render/debug_draw"
+import "render/screen_flash"
 import "render/sprites"
 import "render/tilemap"
 import "shape"
@@ -31,6 +32,7 @@ Render :: struct {
 	world_sprites:            ^sprites.Sprites,
 	tilemap_front:            ^tilemap.Tilemap_Manager,
 	tilemap_back:             ^tilemap.Tilemap_Manager,
+	screen_flash_renderer:    screen_flash.Screen_Flash_Renderer,
 }
 
 render_init :: proc(r: ^Render) {
@@ -83,6 +85,8 @@ render_init :: proc(r: ^Render) {
 		debug_state.draw = debug_draw.init_debug_draw()
 	}
 
+	// Initialize screen flash renderer
+	r.screen_flash_renderer = screen_flash.init()
 }
 
 render_frame :: proc(w: ^World, r: ^Render) {
@@ -114,6 +118,10 @@ render_frame :: proc(w: ^World, r: ^Render) {
 
 	sprites.sprites_draw(r.world_sprites, &r.world_ortho)
 
+	// Draw screen flash (after sprites, before UI)
+	if screen_flash_is_active(&w.screen_flash) {
+		screen_flash.draw(&r.screen_flash_renderer, screen_flash_get_color(&w.screen_flash))
+	}
 
 	menu.render(sapp.width(), sapp.height())
 	sg.end_pass()
@@ -132,6 +140,8 @@ render_cleanup :: proc(r: ^Render) {
 	if r.tilemap_back != nil {
 		tilemap.destory_render_tilemap(r.tilemap_back)
 	}
+
+	screen_flash.cleanup(&r.screen_flash_renderer)
 
 	when ODIN_DEBUG {
 		debug_draw.destroy_debug_draw(&debug_state.draw)
@@ -161,6 +171,10 @@ render_reloaded :: proc(r: ^Render) {
 		debug_draw.destroy_debug_draw(&debug_state.draw)
 		debug_state.draw = debug_draw.init_debug_draw()
 	}
+
+	// Reinitialize screen flash renderer
+	screen_flash.cleanup(&r.screen_flash_renderer)
+	r.screen_flash_renderer = screen_flash.init()
 }
 
 @(private = "file")

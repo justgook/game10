@@ -20,6 +20,8 @@ World :: struct {
 	// Camera system
 	cam:              camera.Camera,
 	player_entity:    int, // Track which entity is the player for camera following
+	// Screen effects (global, not per-entity)
+	screen_flash:     ScreenFlash,
 	// Components
 	position:         logic.Component_Storage(Position),
 	velocity:         logic.Component_Storage(Velocity),
@@ -39,6 +41,8 @@ World :: struct {
 	brain:            logic.Component_Storage(Brain),
 	timer:            logic.Component_Storage(Timer),
 	squash:           logic.Component_Storage(SquashStretch),
+	blink:            logic.Component_Storage(Blink),
+	sprite_shake:     logic.Component_Storage(SpriteShake),
 }
 
 world_init :: proc(w: ^World) {
@@ -50,6 +54,9 @@ world_init :: proc(w: ^World) {
 	// Initialize camera
 	w.cam = camera.camera_init({sapp.widthf() / 2, sapp.heightf() / 2}, 1.0)
 	w.player_entity = -1
+	
+	// Initialize screen effects
+	w.screen_flash = screen_flash_init()
 
 	// change_scene(w, "build.nosync/dd-000-000.wbin")
 	create_mock_data(w)
@@ -73,6 +80,8 @@ world_frame :: proc(w: ^World) {
 			sys_movement(w)
 			sys_timer(w)
 			sys_squash(w)
+			sys_blink(w)
+			sys_sprite_shake(w)
 
 			w.accumulator -= w.sim_frame_length
 		}
@@ -80,6 +89,9 @@ world_frame :: proc(w: ^World) {
 
 	// Update camera (runs every frame for smooth movement)
 	sys_camera(w)
+	
+	// Update screen flash (runs every frame for smooth fade)
+	screen_flash_update(&w.screen_flash, f32(sapp.frame_duration()))
 }
 
 // Camera system - updates camera position based on tracked entity
@@ -130,6 +142,8 @@ entity_delete :: proc(w: ^World, entity_id: int) {
 	logic.delete_component(&w.brain, entity_id)
 	logic.delete_component(&w.timer, entity_id)
 	logic.delete_component(&w.squash, entity_id)
+	logic.delete_component(&w.blink, entity_id)
+	logic.delete_component(&w.sprite_shake, entity_id)
 }
 
 world_cleanup :: proc(w: ^World) {
@@ -150,6 +164,8 @@ world_cleanup :: proc(w: ^World) {
 	logic.destroy_storage(&w.brain)
 	logic.destroy_storage(&w.timer)
 	logic.destroy_storage(&w.squash)
+	logic.destroy_storage(&w.blink)
+	logic.destroy_storage(&w.sprite_shake)
 
 	grid.destroy_grid(&w.grid)
 	delete(w.segments)

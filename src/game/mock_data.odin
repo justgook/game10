@@ -17,6 +17,8 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(&w.jump, player, JumpState{})
 	logic.add_component(&w.brain, player, Brain{})
 	logic.add_component(&w.squash, player, squash_init())
+	logic.add_component(&w.blink, player, blink_init())
+	logic.add_component(&w.sprite_shake, player, sprite_shake_init())
 
 	// Set up camera to track player
 	w.player_entity = player
