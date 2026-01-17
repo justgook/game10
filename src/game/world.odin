@@ -37,6 +37,7 @@ World :: struct {
 	player_hurt:      logic.Component_Storage(shape.Capsule),
 	player_hit:       logic.Component_Storage(shape.Circle),
 	brain:            logic.Component_Storage(Brain),
+	timer:            logic.Component_Storage(Timer),
 }
 
 world_init :: proc(w: ^World) {
@@ -44,7 +45,7 @@ world_init :: proc(w: ^World) {
 
 	_ = entity_delete
 	w.sim_frame_length = 1.0 / 60.0
-	
+
 	// Initialize camera
 	w.cam = camera.camera_init({sapp.widthf() / 2, sapp.heightf() / 2}, 1.0)
 	w.player_entity = -1

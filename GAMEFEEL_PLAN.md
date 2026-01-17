@@ -6,30 +6,127 @@ This document outlines the features to implement from the [deepnight/gamefeel](h
 
 ---
 
+## Quick Status Checklist
+
+### Phase 1: Foundation
+- [x] **1.1 Camera System** - Tracking, shake, bump, zoom effects
+- [ ] **1.2 Cooldown System** - Timed cooldowns for abilities
+- [ ] **1.3 Input Buffering** - Queue inputs during lock states
+- [ ] **1.4 Coyote Time** - Jump grace period after leaving ground
+
+### Phase 2: Visual Feedback
+- [ ] **2.1 Squash & Stretch** - Sprite distortion on events
+- [ ] **2.2 Entity Blink** - Flash on damage
+- [ ] **2.3 Sprite Shake** - Per-entity shake
+- [ ] **2.4 Screen Flash** - Full-screen color flash
+
+### Phase 3: Particles
+- [ ] **3.1 GPU Particle System** - Pooled particles with physics
+
+### Phase 4: Combat Effects
+- [ ] **4.1 Gun/Weapon Effects** - Muzzle flash, cartridges, recoil
+- [ ] **4.2 Impact Effects** - Hit particles, blood, wall burns
+- [ ] **4.3 Enemy Reactions** - Knockback, ground pound
+
+### Phase 5: Movement Abilities
+- [ ] **5.1 Double Jump** - Air jump with effects
+- [ ] **5.2 Dash Ability** - Quick movement with trail
+- [ ] **5.3 Traversal Helpers** - Auto step-up, cliff grab
+
+### Phase 6: Game State
+- [ ] **6.1 Slow Motion** - Time dilation effects
+- [ ] **6.2 Control Locks** - Temporary input disable
+- [ ] **6.3 Affect System** - Status effects (stun, slow)
+
+### Phase 7: Animation
+- [ ] **7.1 Basic Animations** - Idle, run, jump states
+- [ ] **7.2 Weapon Animations** - Aim, shoot, recoil
+
+---
+
+## Completed Features
+
+### 1.1 Camera System ✅
+
+**Location**: `src/game/camera/camera.odin`
+
+**How it works**:
+
+The camera is a singleton struct stored in `World.cam` (not a component). It provides smooth tracking with dead zones, plus visual effects (shake, bump, zoom bump).
+
+**Key structures**:
+```odin
+Camera :: struct {
+    position:        [2]f32,      // Current camera position in pixels
+    zoom:            f32,         // Target zoom level
+    current_zoom:    f32,         // Smoothed zoom (interpolates to target)
+    target_entity:   int,         // Entity ID to follow (-1 = none)
+    target_offset:   [2]f32,      // Offset from target
+    config:          Camera_Config,
+    shake:           Shake_State, // Active shake effect
+    bump:            Bump_State,  // Active bump offset
+    zoom_bump:       f32,         // Instant zoom change that decays
+    velocity:        [2]f32,      // For smooth movement
+}
+```
+
+**Usage**:
+```odin
+// Track an entity
+camera.camera_track(&w.cam, player_id, immediate = true)
+
+// Trigger effects
+camera.camera_shake(&w.cam, power_x, power_y, duration_seconds)
+camera.camera_bump(&w.cam, offset_x, offset_y)
+camera.camera_bump_zoom(&w.cam, zoom_amount)
+
+// Get render matrix (in render.odin)
+viewport := [2]f32{sapp.widthf(), sapp.heightf()}
+matrix := camera.camera_get_matrix(&w.cam, viewport)
+```
+
+**Integration points**:
+- `world.odin`: `sys_camera()` runs every frame, updates camera based on tracked entity
+- `render.odin`: `update_ortho()` uses `camera_get_matrix()` for view transform
+- `sys_movement.odin`: Triggers shake/bump on landing and jumping
+- `main.odin`: Debug keys F1-F5 for testing effects
+
+**Debug controls** (debug builds only):
+- **F1**: Test camera shake
+- **F2**: Test camera bump
+- **F4**: Test zoom bump
+- **F5**: Toggle zoom (1x ↔ 2x)
+
+**Effect triggers currently implemented**:
+- Landing from height → shake + bump (power based on fall velocity)
+- Heavy landing → zoom bump
+- Jump start → small upward bump
+
+---
+
 ## Phase 1: Foundation Systems
 
 ### 1.1 Camera System
-**Priority**: HIGH | **Status**: Pending
+**Priority**: HIGH | **Status**: ✅ DONE
 
 The camera is the player's window into the game world. A good camera system makes everything feel more responsive and impactful.
 
-| Feature | Description | Trigger |
-|---------|-------------|---------|
-| **Smooth Tracking** | Camera follows target with configurable speed and dead zones | Always |
-| **Camera Shake** | Shake the camera horizontally or vertically | Player shoots (X), lands from height (Y) |
-| **Camera Bump** | Abruptly offset the camera for a short period | Player shoots, lands, dashes |
-| **Camera Zoom Bump** | Abruptly zoom-in the camera briefly | Player lands, dashes |
-| **Level Bounds Clamping** | Keep camera within level boundaries | Always |
+| Feature | Description | Trigger | Status |
+|---------|-------------|---------|--------|
+| **Smooth Tracking** | Camera follows target with configurable speed and dead zones | Always | ✅ |
+| **Camera Shake** | Shake the camera horizontally or vertically | Player shoots (X), lands from height (Y) | ✅ |
+| **Camera Bump** | Abruptly offset the camera for a short period | Player shoots, lands, dashes | ✅ |
+| **Camera Zoom Bump** | Abruptly zoom-in the camera briefly | Player lands, dashes | ✅ |
+| **Level Bounds Clamping** | Keep camera within level boundaries | Always | ✅ |
 
-**Components to create**:
-- `Camera` - Main camera state (position, zoom, target, dead zones)
-- `CameraShake` - Active shake effect
-- `CameraBump` - Active bump offset
+**Files created**:
+- `src/game/camera/camera.odin` - All camera logic in one file
 
 **Implementation Notes**:
-- Camera position uses subpixel integers internally
-- Final matrix conversion happens at render time
-- Shake/bump effects are additive and decay over time
+- Camera uses f32 for smooth sub-pixel movement
+- Effects (shake, bump) are additive and decay with friction
+- Matrix generation happens at render time via `camera_get_matrix()`
+- See "Completed Features" section above for detailed usage
 
 ---
 
@@ -395,8 +492,8 @@ Recommended order based on dependencies and impact:
 
 ```
 Phase 1: Foundation (do first)
-  1.1 Camera System ← START HERE
-  1.2 Cooldown System
+  1.1 Camera System ✅ DONE
+  1.2 Cooldown System ← NEXT
   1.3 Input Buffering  
   1.4 Coyote Time
 
@@ -436,8 +533,7 @@ Phase 7: Animation
 ```
 src/game/
 ├── camera/
-│   ├── camera.odin          # Camera component & system
-│   └── camera_effects.odin  # Shake, bump, zoom effects
+│   └── camera.odin          # Camera state, effects, matrix generation ✅
 ├── effects/
 │   ├── squash_stretch.odin  # Squash & stretch component
 │   ├── blink.odin           # Entity blink effect
