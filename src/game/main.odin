@@ -1,6 +1,6 @@
 package game
 
-import "../entry"
+import "camera"
 import "core:fmt"
 import "core:text/i18n"
 import menu "menu"
@@ -81,6 +81,38 @@ game_event :: proc(e: ^sapp.Event) {
 		if e.key_code == .F3 {
 			menu.toggle_debug_hud()
 			return
+		}
+		
+		// Debug camera effects (F1-F4)
+		when ODIN_DEBUG {
+			if e.key_code == .F1 {
+				// Test camera shake
+				camera.camera_shake(&g.world.cam, 3, 3, 0.5)
+				fmt.println("Camera shake triggered")
+				return
+			}
+			if e.key_code == .F2 {
+				// Test camera bump
+				camera.camera_bump(&g.world.cam, 10, 5)
+				fmt.println("Camera bump triggered")
+				return
+			}
+			if e.key_code == .F4 {
+				// Test zoom bump
+				camera.camera_bump_zoom(&g.world.cam, 0.1)
+				fmt.println("Camera zoom bump triggered")
+				return
+			}
+			if e.key_code == .F5 {
+				// Toggle zoom
+				if g.world.cam.zoom > 1.5 {
+					camera.camera_set_zoom(&g.world.cam, 1.0)
+				} else {
+					camera.camera_set_zoom(&g.world.cam, 2.0)
+				}
+				fmt.printfln("Camera zoom set to %v", g.world.cam.zoom)
+				return
+			}
 		}
 	}
 

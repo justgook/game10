@@ -1,5 +1,6 @@
 package game
 
+import "camera"
 import "core:fmt"
 import "grid"
 import "logic"
@@ -16,8 +17,9 @@ World :: struct {
 	next_entity_id:   int,
 	sim_frame_length: f64,
 	accumulator:      f64,
-	camera:           [2]f32,
-	zoom:             f32,
+	// Camera system
+	cam:              camera.Camera,
+	player_entity:    int, // Track which entity is the player for camera following
 	// Components
 	position:         logic.Component_Storage(Position),
 	velocity:         logic.Component_Storage(Velocity),
@@ -42,9 +44,10 @@ world_init :: proc(w: ^World) {
 
 	_ = entity_delete
 	w.sim_frame_length = 1.0 / 60.0
-	w.camera = {sapp.widthf() / 2, sapp.heightf() / 2}
-	w.zoom = 1
-
+	
+	// Initialize camera
+	w.cam = camera.camera_init({sapp.widthf() / 2, sapp.heightf() / 2}, 1.0)
+	w.player_entity = -1
 
 	// change_scene(w, "build.nosync/dd-000-000.wbin")
 	create_mock_data(w)
@@ -70,6 +73,24 @@ world_frame :: proc(w: ^World) {
 			w.accumulator -= w.sim_frame_length
 		}
 	}
+
+	// Update camera (runs every frame for smooth movement)
+	sys_camera(w)
+}
+
+// Camera system - updates camera position based on tracked entity
+sys_camera :: proc(w: ^World) {
+	// Get target position if we're tracking an entity
+	target_pos: Maybe([2]f32)
+	if w.player_entity >= 0 {
+		if pos, ok := logic.get_component(&w.position, w.player_entity); ok {
+			target_pos = to_pixelf(pos^)
+		}
+	}
+
+	// Update camera
+	viewport := [2]f32{sapp.widthf(), sapp.heightf()}
+	camera.camera_update(&w.cam, target_pos, f32(sapp.frame_duration()), viewport)
 }
 
 

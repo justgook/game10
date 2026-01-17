@@ -1,4 +1,6 @@
 package game
+
+import "camera"
 import "grid"
 import "logic"
 import "shape"
@@ -15,6 +17,11 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(&w.jump, player, JumpState{})
 	logic.add_component(&w.brain, player, Brain{})
 
+	// Set up camera to track player
+	w.player_entity = player
+	camera.camera_track(&w.cam, player, true)
+	// Center camera on player's initial position
+	camera.camera_center_on(&w.cam, to_pixelf(Position{64 * UNIT, 128 * UNIT}))
 
 	append(&w.segments, Segment{32 * UNIT, 64 * UNIT, 128 * UNIT, 64 * UNIT})
 

@@ -1,6 +1,7 @@
 package game
 
 import "../entry"
+import "camera"
 import "core:c"
 import "core:fmt"
 import "core:image/qoi"
@@ -164,13 +165,8 @@ render_reloaded :: proc(r: ^Render) {
 
 @(private = "file")
 update_ortho :: proc(w: ^World, r: ^Render) {
-	window_w := sapp.widthf()
-	window_h := sapp.heightf()
-	ortho := linalg.matrix_ortho3d_f32(window_w * -0.5, window_w * 0.5, window_h * -0.5, window_h * 0.5, -1, 1)
-	translate_mat := linalg.matrix4_translate_f32({-w.camera.x, -w.camera.y, 0.0})
-	scale_mat := linalg.matrix4_scale_f32({1.0 / w.zoom, 1.0 / w.zoom, 1.0})
-
-	r.world_ortho = ortho * translate_mat * scale_mat
+	viewport := [2]f32{sapp.widthf(), sapp.heightf()}
+	r.world_ortho = camera.camera_get_matrix(&w.cam, viewport)
 }
 
 @(require_results)
@@ -230,9 +226,10 @@ prepare_hud_data :: proc(w: ^World, r: ^Render) -> menu.Hud_Data {
 	hud.paused = c.int(w.pasued ? 1 : 0)
 
 	// Camera
-	hud.camera_x = w.camera.x
-	hud.camera_y = w.camera.y
-	hud.zoom = w.zoom
+	cam_pos := camera.camera_get_render_position(&w.cam)
+	hud.camera_x = cam_pos.x
+	hud.camera_y = cam_pos.y
+	hud.zoom = camera.camera_get_render_zoom(&w.cam)
 
 	// Performance
 	hud.fps = 1.0 / f32(sapp.frame_duration())
