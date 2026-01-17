@@ -71,10 +71,10 @@ void main() {
     }
 
     // Apply additive color (for blink/flash effects)
-    // colorAdd.rgb is the color to add, colorAdd.a is the intensity
-    texColor.rgb += colorAdd.rgb * colorAdd.a;
-    
-    frag_color = texColor;
+    float luminance = dot(texColor.rgb, vec3(0.299, 0.587, 0.114));
+    vec3 result = mix(texColor.rgb, colorAdd.rgb * luminance, colorAdd.a);
+
+    frag_color = vec4(result, texColor.a);
 }
 @end
 
