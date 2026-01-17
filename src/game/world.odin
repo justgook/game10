@@ -38,6 +38,7 @@ World :: struct {
 	player_hit:       logic.Component_Storage(shape.Circle),
 	brain:            logic.Component_Storage(Brain),
 	timer:            logic.Component_Storage(Timer),
+	squash:           logic.Component_Storage(SquashStretch),
 }
 
 world_init :: proc(w: ^World) {
@@ -70,6 +71,8 @@ world_frame :: proc(w: ^World) {
 			sys_velocity(w)
 			sys_brain(w)
 			sys_movement(w)
+			sys_timer(w)
+			sys_squash(w)
 
 			w.accumulator -= w.sim_frame_length
 		}
@@ -125,6 +128,8 @@ entity_delete :: proc(w: ^World, entity_id: int) {
 	logic.delete_component(&w.player_hurt, entity_id)
 	logic.delete_component(&w.player_hit, entity_id)
 	logic.delete_component(&w.brain, entity_id)
+	logic.delete_component(&w.timer, entity_id)
+	logic.delete_component(&w.squash, entity_id)
 }
 
 world_cleanup :: proc(w: ^World) {
@@ -143,7 +148,8 @@ world_cleanup :: proc(w: ^World) {
 	logic.destroy_storage(&w.player_hurt)
 	logic.destroy_storage(&w.player_hit)
 	logic.destroy_storage(&w.brain)
-
+	logic.destroy_storage(&w.timer)
+	logic.destroy_storage(&w.squash)
 
 	grid.destroy_grid(&w.grid)
 	delete(w.segments)

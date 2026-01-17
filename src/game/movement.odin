@@ -42,6 +42,8 @@ JumpState :: struct {
 	can_jump:         bool, // Are we allowed to jump (e.g., touching ground)
 	facing_right:     bool,
 	input:            bool,
+	// Input buffering & coyote time
+	jump_input:       JumpInput, // Handles buffering and coyote time
 }
 
 update_movement_vertical :: proc(vel: ^[2]int, state: ^JumpState) {
@@ -49,8 +51,12 @@ update_movement_vertical :: proc(vel: ^[2]int, state: ^JumpState) {
 		state.facing_right = vel[0] > 0
 	}
 
-	// Start new jump
-	if state.input && state.can_jump && !state.was_jumping {
+	// Update jump input with buffering and coyote time
+	// This returns true if we should execute a jump this frame
+	should_jump := jump_input_update(&state.jump_input, state.can_jump, state.input)
+
+	// Start new jump (using buffered input system)
+	if should_jump && !state.was_jumping {
 		vel[1] = JUMP_INITIAL_FORCE
 		state.jump_hold_frames = 0
 		state.is_rising = true

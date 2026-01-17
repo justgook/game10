@@ -10,12 +10,12 @@ This document outlines the features to implement from the [deepnight/gamefeel](h
 
 ### Phase 1: Foundation
 - [x] **1.1 Camera System** - Tracking, shake, bump, zoom effects
-- [ ] **1.2 Cooldown System** - Timed cooldowns for abilities
-- [ ] **1.3 Input Buffering** - Queue inputs during lock states
-- [ ] **1.4 Coyote Time** - Jump grace period after leaving ground
+- [x] **1.2 Timer/Cooldown System** - Frame-based timers with callbacks
+- [x] **1.3 Input Buffering** - Queue inputs during lock states
+- [x] **1.4 Coyote Time** - Jump grace period after leaving ground
 
 ### Phase 2: Visual Feedback
-- [ ] **2.1 Squash & Stretch** - Sprite distortion on events
+- [x] **2.1 Squash & Stretch** - Sprite distortion on events
 - [ ] **2.2 Entity Blink** - Flash on damage
 - [ ] **2.3 Sprite Shake** - Per-entity shake
 - [ ] **2.4 Screen Flash** - Full-screen color flash
@@ -130,79 +130,156 @@ The camera is the player's window into the game world. A good camera system make
 
 ---
 
-### 1.2 Cooldown System
-**Priority**: HIGH | **Status**: Pending
+### 1.2 Timer/Cooldown System
+**Priority**: HIGH | **Status**: ✅ DONE
 
 Foundation for timed effects, abilities, and state management.
 
-| Feature | Description |
-|---------|-------------|
-| **Named Cooldowns** | Set/check/get cooldowns by ID |
-| **Real-time Cooldowns** | Unaffected by slow-mo (for UI, etc.) |
-| **Ratio Access** | Get remaining ratio for animations |
+**Location**: `src/game/sys_timer.odin`
 
-**Components to create**:
-- `Cooldowns` - Map of cooldown timers per entity
+**How it works**:
+
+The Timer is a component that counts down frames and triggers callbacks. It can be used for timed effects, delayed actions, cooldowns, and particle lifetimes.
+
+**Key structures**:
+```odin
+Timer :: struct {
+    frames:             int,     // Remaining frames (decrements each tick)
+    data:               rawptr,  // Optional data pointer for callbacks
+    disable_autofree:   bool,    // If true, don't free `data` on complete
+    delete_on_complete: bool,    // If true, delete entity when timer ends
+    on_update:          proc(w: ^World, entity: int, data: rawptr),
+    on_complete:        proc(w: ^World, entity: int, data: rawptr),
+}
+```
+
+**Usage**:
+```odin
+// Simple timer that deletes entity on completion
+timer := timer_create(60, on_complete_proc)  // 60 frames = 1 second at 60fps
+logic.set_component(&w.timer, entity_id, timer)
+
+// Timer with update callback (for effects that change over time)
+timer := timer_create_with_update(30, on_update_proc, on_complete_proc)
+
+// Get progress ratio for animations
+ratio := timer_get_ratio(&timer, original_frames)  // 0.0 -> 1.0
+remaining := timer_get_remaining_ratio(&timer, original_frames)  // 1.0 -> 0.0
+```
+
+**Integration points**:
+- `world.odin`: `sys_timer()` runs in fixed update loop
+- Timer component stored in `World.timer`
+- Cleanup in `entity_delete()` and `world_cleanup()`
 
 ---
 
-### 1.3 Input Buffering
-**Priority**: HIGH | **Status**: Pending
+### 1.3 Input Buffering & 1.4 Coyote Time
+**Priority**: HIGH | **Status**: ✅ DONE
 
-> "Queue Player inputs to avoid losing them when the Player is 'locked' (eg. stunned)."
+These two systems work together to make jumping feel responsive:
 
-Prevents frustrating input drops during brief lock states.
+**Location**: `src/game/input_buffer.odin`
 
-| Feature | Description |
-|---------|-------------|
-| **Input Queue** | Buffer inputs for ~0.1-0.15s |
-| **Consume on Unlock** | Execute buffered input when controls unlock |
+**How it works**:
 
-**Implementation Notes**:
-- Store last N frames of input with timestamps
-- Check buffer when action becomes available
+1. **INPUT BUFFERING**: If you press jump slightly BEFORE landing, the jump is buffered and executes when you land. Prevents "I pressed jump!" frustration.
 
----
+2. **COYOTE TIME**: If you walk off a ledge, you have a brief grace period where you can still jump. Named after Wile E. Coyote running off cliffs.
 
-### 1.4 Coyote Time (Just-In-Time Jump)
-**Priority**: HIGH | **Status**: Pending
+**Key structures**:
+```odin
+JumpInput :: struct {
+    pressed:              bool,  // Is jump button held this frame
+    just_pressed:         bool,  // Was jump button pressed this frame
+    buffer_frames:        int,   // Frames remaining in jump buffer
+    coyote_frames:        int,   // Frames remaining for coyote time
+    was_grounded:         bool,  // Was grounded last frame
+}
+```
 
-> "Allows the Player to jump even if it's no longer on the ground."
+**Configuration** (in `input_buffer.odin`):
+```odin
+JUMP_BUFFER_FRAMES :: 8   // ~0.13s - how long to remember a jump press
+COYOTE_TIME_FRAMES :: 6   // ~0.1s - grace period after leaving ground
+```
 
-One of the most impactful platformer feel improvements.
+**Usage**:
+```odin
+// In movement update, call this to check if jump should execute
+should_jump := jump_input_update(&state.jump_input, is_grounded, jump_button_down)
+if should_jump {
+    // Execute jump
+}
 
-| Feature | Description |
-|---------|-------------|
-| **Grace Period** | ~0.1-0.15s window after leaving ground |
-| **Jump Buffering** | Accept jump input slightly before landing |
+// Helper functions for visual feedback
+in_coyote := jump_input_in_coyote(&state.jump_input)
+has_buffer := jump_input_has_buffer(&state.jump_input)
+```
 
-**Implementation Notes**:
-- Track `time_since_grounded` 
-- Allow jump if `time_since_grounded < COYOTE_TIME`
+**Integration**:
+- `JumpInput` is embedded in `JumpState` struct
+- `update_movement_vertical()` calls `jump_input_update()` automatically
+- Works with existing collision system that sets `can_jump`
 
 ---
 
 ## Phase 2: Visual Feedback
 
 ### 2.1 Squash & Stretch
-**Priority**: HIGH | **Status**: Pending
+**Priority**: HIGH | **Status**: ✅ DONE
 
 > "Distort the hero/enemies like a jelly ball in reaction to external events."
 
 Makes entities feel alive and reactive.
 
-| Feature | Description | Trigger |
-|---------|-------------|---------|
-| **Hero Squash** | Distort player sprite | Jumps, lands, dashes, shoots |
-| **Enemy Squash** | Distort enemy sprites | Hit by bullets |
+**Location**: `src/game/squash_stretch.odin`, `src/game/sys_squash.odin`
 
-**Components to create**:
-- `SquashStretch` - Current scale X/Y with auto-recovery
+**How it works**:
 
-**Implementation Notes**:
-- `squash_x` and `squash_y` multiply sprite scale
-- Auto-lerp back to 1.0 each frame
-- Preserve volume: if X shrinks, Y grows (and vice versa)
+The SquashStretch component modifies sprite scale with spring-like auto-recovery. Values bounce back to 1.0 naturally, creating a "jelly" effect.
+
+**Key structures**:
+```odin
+SquashStretch :: struct {
+    scale_x:     f32,  // Current X scale multiplier (1.0 = normal)
+    scale_y:     f32,  // Current Y scale multiplier (1.0 = normal)
+    velocity_x:  f32,  // Velocity for smooth spring animation
+    velocity_y:  f32,
+}
+```
+
+**Configuration** (in `squash_stretch.odin`):
+```odin
+SQUASH_RECOVERY_SPEED :: 0.15  // Spring strength (higher = faster recovery)
+SQUASH_MIN :: 0.5              // Minimum scale allowed
+SQUASH_MAX :: 1.5              // Maximum scale allowed
+```
+
+**Usage**:
+```odin
+// Add component to entity
+logic.add_component(&w.squash, entity_id, squash_init())
+
+// Trigger effects
+squash_on_jump(&squash)           // Stretch vertically (0.8, 1.25)
+squash_on_land(&squash, power)    // Squash vertically (power 0-1)
+squash_on_dash(&squash, facing)   // Stretch horizontally (1.3, 0.8)
+squash_on_hit(&squash)            // Quick squash (0.7, 1.3)
+
+// Or set directly
+squash_set(&squash, 0.7, 1.3)
+squash_set_preserve_volume(&squash, 0.7)  // Auto-calculates Y
+```
+
+**Integration**:
+- `sys_squash()` runs in fixed update loop, updates all squash components
+- `render_sprite()` applies squash scale to sprite size
+- `sys_movement()` triggers squash on jump and landing
+
+**Current triggers**:
+- Jump start → stretch vertically (0.8, 1.25)
+- Landing → squash vertically (intensity based on fall speed)
 
 ---
 
@@ -493,13 +570,13 @@ Recommended order based on dependencies and impact:
 ```
 Phase 1: Foundation (do first)
   1.1 Camera System ✅ DONE
-  1.2 Cooldown System ← NEXT
-  1.3 Input Buffering  
-  1.4 Coyote Time
+  1.2 Timer/Cooldown System ✅ DONE
+  1.3 Input Buffering ✅ DONE
+  1.4 Coyote Time ✅ DONE
 
 Phase 2: Visual Feedback
-  2.1 Squash & Stretch
-  2.2 Entity Blink
+  2.1 Squash & Stretch ✅ DONE
+  2.2 Entity Blink ← NEXT
   2.3 Sprite Shake
   2.4 Screen Flash
 

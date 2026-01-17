@@ -6,23 +6,23 @@ import "core:math/linalg"
 // Camera state - lives in World, not as a component (singleton)
 Camera :: struct {
 	// Current position (in pixels, f32 for smooth movement)
-	position:        [2]f32,
+	position:      [2]f32,
 	// Target zoom level
-	zoom:            f32,
+	zoom:          f32,
 	// Current zoom (smoothed towards target)
-	current_zoom:    f32,
+	current_zoom:  f32,
 	// Target entity to follow (entity ID, -1 for none)
-	target_entity:   int,
+	target_entity: int,
 	// Offset from target position
-	target_offset:   [2]f32,
+	target_offset: [2]f32,
 	// Configuration
-	config:          Camera_Config,
+	config:        Camera_Config,
 	// Active effects
-	shake:           Shake_State,
-	bump:            Bump_State,
-	zoom_bump:       f32,
+	shake:         Shake_State,
+	bump:          Bump_State,
+	zoom_bump:     f32,
 	// Velocity for smooth movement
-	velocity:        [2]f32,
+	velocity:      [2]f32,
 }
 
 Camera_Config :: struct {
@@ -76,16 +76,16 @@ DEFAULT_CONFIG :: Camera_Config {
 // Initialize camera with default values
 camera_init :: proc(initial_pos: [2]f32 = {0, 0}, initial_zoom: f32 = 1.0) -> Camera {
 	return Camera {
-		position      = initial_pos,
-		zoom          = initial_zoom,
-		current_zoom  = initial_zoom,
+		position = initial_pos,
+		zoom = initial_zoom,
+		current_zoom = initial_zoom,
 		target_entity = -1,
 		target_offset = {0, 0},
-		config        = DEFAULT_CONFIG,
-		shake         = {},
-		bump          = {friction = 0.85},
-		zoom_bump     = 0,
-		velocity      = {0, 0},
+		config = DEFAULT_CONFIG,
+		shake = {},
+		bump = {friction = 0.85},
+		zoom_bump = 0,
+		velocity = {0, 0},
 	}
 }
 
@@ -158,12 +158,7 @@ camera_bump_zoom :: proc(cam: ^Camera, amount: f32) {
 // target_pos: position of tracked entity (in pixels), or nil if not tracking
 // dt: delta time in seconds
 // viewport_size: current viewport dimensions
-camera_update :: proc(
-	cam: ^Camera,
-	target_pos: Maybe([2]f32),
-	dt: f32,
-	viewport_size: [2]f32,
-) {
+camera_update :: proc(cam: ^Camera, target_pos: Maybe([2]f32), dt: f32, viewport_size: [2]f32) {
 	// Calculate tmod for frame-rate independent movement
 	tmod := dt * 60.0 // Normalize to 60fps
 
@@ -224,10 +219,10 @@ clamp_to_bounds :: proc(cam: ^Camera, viewport_size: [2]f32) {
 	half_h := viewport_size.y * 0.5 / cam.current_zoom
 
 	// Only clamp if bounds are set (non-zero)
-	if bounds[2] > bounds[0] { // right > left
+	if bounds[2] > bounds[0] { 	// right > left
 		cam.position.x = clamp(cam.position.x, bounds[0] + half_w, bounds[2] - half_w)
 	}
-	if bounds[3] > bounds[1] { // bottom > top
+	if bounds[3] > bounds[1] { 	// bottom > top
 		cam.position.y = clamp(cam.position.y, bounds[1] + half_h, bounds[3] - half_h)
 	}
 }
@@ -385,8 +380,10 @@ is_rect_on_screen :: proc(
 	half_h := (viewport_size.y * 0.5 / zoom) + padding
 
 	// AABB overlap test
-	return !(rect_pos.x + rect_size.x < pos.x - half_w ||
-		rect_pos.x > pos.x + half_w ||
-		rect_pos.y + rect_size.y < pos.y - half_h ||
-		rect_pos.y > pos.y + half_h)
+	return(
+		!(rect_pos.x + rect_size.x < pos.x - half_w ||
+			rect_pos.x > pos.x + half_w ||
+			rect_pos.y + rect_size.y < pos.y - half_h ||
+			rect_pos.y > pos.y + half_h) \
+	)
 }

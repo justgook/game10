@@ -9,6 +9,7 @@ sys_movement :: proc(w: ^World) {
 	for id, pos, vel, jump, input in logic.each(&view) {
 		was_falling := vel.y < 0
 		was_vel_y := vel.y
+		was_grounded := jump.can_jump
 		
 		update_movement_horizontal(vel, input)
 		update_movement_vertical(vel, jump)
@@ -37,13 +38,25 @@ sys_movement :: proc(w: ^World) {
 				if power > 0.5 {
 					camera.camera_bump_zoom(&w.cam, 0.02 * power)
 				}
+				
+				// Squash effect on landing
+				if squash, ok := logic.get_component(&w.squash, id); ok {
+					squash_on_land(squash, power)
+				}
 			}
 		}
 		
 		// Detect jump start
-		if !was_falling && vel.y > 0 && was_vel_y <= 0 && id == w.player_entity {
-			// Small camera bump on jump
-			camera.camera_bump(&w.cam, 0, -3)
+		if !was_falling && vel.y > 0 && was_vel_y <= 0 {
+			if id == w.player_entity {
+				// Small camera bump on jump
+				camera.camera_bump(&w.cam, 0, -3)
+			}
+			
+			// Squash effect on jump (stretch vertically)
+			if squash, ok := logic.get_component(&w.squash, id); ok {
+				squash_on_jump(squash)
+			}
 		}
 	}
 }
