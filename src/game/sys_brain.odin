@@ -29,6 +29,7 @@ sys_brain :: proc(w: ^World) {
 		for wall in found {
 			shape.segment_segment_test(wall, &test) or_continue
 			input.x *= -1
+			break
 		}
 	}
 }

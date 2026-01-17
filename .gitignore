@@ -17,5 +17,7 @@ Thumbs.db
 
 /.idea
 *.iml
+temp/
+tmp/
 
 

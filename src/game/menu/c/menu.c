@@ -139,7 +139,7 @@ static void draw_debug_hud(struct nk_context *ctx, const HudData *data) {
 }
 
 // Draw the main game menu
-static void draw_main_menu(struct nk_context *ctx, const HudData* data) {
+static void draw_main_menu(struct nk_context *ctx, const HudData *data) {
   if (!show_menu)
     return;
 
@@ -149,7 +149,8 @@ static void draw_main_menu(struct nk_context *ctx, const HudData* data) {
   float menu_x = data ? (data->window_width - menu_width) / 2.0f : 50;
   float menu_y = data ? (data->window_height - menu_height) / 2.0f : 50;
 
-  if (nk_begin(ctx, "Game Menu", nk_rect(menu_x, menu_y, menu_width, menu_height),
+  if (nk_begin(ctx, "Game Menu",
+               nk_rect(menu_x, menu_y, menu_width, menu_height),
                NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
                    NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
     nk_layout_row_dynamic(ctx, 30, 1);
