@@ -1,5 +1,6 @@
 package game
 
+import "core:fmt"
 import "logic"
 
 // Timer component - counts down frames and triggers callbacks
