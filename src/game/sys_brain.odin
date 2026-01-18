@@ -46,9 +46,8 @@ sys_keyboard :: proc(w: ^World, id: int) {
 		char_input.x -= i8(key_down(.LEFT))
 	}
 
-	// if comp, ok := logic.get_component(&w.trigger, id); ok {
-	// 	comp.state.is_active = key_down(input_state, .X)
-	// 	comp.state.just_pressed = key_just_pressed(input_state, .X)
-	// 	comp.state.just_released = key_just_released(input_state, .X)
-	// }
+	// Trigger/weapon input (X key to shoot)
+	if trigger, ok := logic.get_component(&w.trigger, id); ok {
+		trigger_set_active(trigger, key_down(.X))
+	}
 }

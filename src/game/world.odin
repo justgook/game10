@@ -45,6 +45,9 @@ World :: struct {
 	squash:           logic.Component_Storage(SquashStretch),
 	blink:            logic.Component_Storage(Blink),
 	sprite_shake:     logic.Component_Storage(SpriteShake),
+	// Combat components
+	hitpoint:         logic.Component_Storage(Hitpoint),
+	trigger:          logic.Component_Storage(Trigger),
 }
 
 world_init :: proc(w: ^World) {
@@ -87,6 +90,8 @@ world_frame :: proc(w: ^World) {
 			sys_squash(w)
 			sys_blink(w)
 			sys_sprite_shake(w)
+			sys_combat(w)
+			sys_trigger(w)
 
 			w.accumulator -= w.sim_frame_length
 		}
@@ -152,6 +157,8 @@ entity_delete :: proc(w: ^World, entity_id: int) {
 	logic.delete_component(&w.squash, entity_id)
 	logic.delete_component(&w.blink, entity_id)
 	logic.delete_component(&w.sprite_shake, entity_id)
+	logic.delete_component(&w.hitpoint, entity_id)
+	logic.delete_component(&w.trigger, entity_id)
 }
 
 world_cleanup :: proc(w: ^World) {
@@ -174,6 +181,8 @@ world_cleanup :: proc(w: ^World) {
 	logic.destroy_storage(&w.squash)
 	logic.destroy_storage(&w.blink)
 	logic.destroy_storage(&w.sprite_shake)
+	logic.destroy_storage(&w.hitpoint)
+	logic.destroy_storage(&w.trigger)
 
 	grid.destroy_grid(&w.grid)
 	delete(w.segments)

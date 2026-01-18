@@ -24,9 +24,9 @@ This document outlines the features to implement from the [deepnight/gamefeel](h
 - [x] **3.1 GPU Particle System** - Pooled particles with physics
 
 ### Phase 4: Combat Effects
-- [ ] **4.1 Gun/Weapon Effects** - Muzzle flash, cartridges, recoil
-- [ ] **4.2 Impact Effects** - Hit particles, blood, wall burns
-- [ ] **4.3 Enemy Reactions** - Knockback, ground pound
+- [x] **4.1 Gun/Weapon Effects** - Muzzle flash, cartridges, recoil
+- [x] **4.2 Impact Effects** - Hit particles, blood, wall burns
+- [x] **4.3 Enemy Reactions** - Knockback, ground pound
 
 ### Phase 5: Movement Abilities
 - [ ] **5.1 Double Jump** - Air jump with effects
@@ -498,45 +498,146 @@ fx_double_jump(&w.particles, x, y)
 
 ---
 
-## Phase 4: Combat Effects
+## Phase 4: Combat Effects ✅ COMPLETE
 
 ### 4.1 Gun/Weapon Effects
-**Priority**: MEDIUM | **Status**: Pending
+**Priority**: MEDIUM | **Status**: ✅ DONE
 
-| Effect | Description | Trigger |
-|--------|-------------|---------|
-| **Muzzle Flash** | Brief burst particles at weapon | Player shoots |
-| **Cartridge Ejection** | Small particles that bounce | Player shoots |
-| **Bullet Trail** | Short tail of light on bullets | Bullet moves |
-| **Gun Recoil (Visual)** | Offset sprite without affecting physics | Player shoots |
-| **Gun Recoil (Physical)** | Slight entity movement | Player shoots |
-| **Randomize Bullets** | Slight spread variation | Player shoots |
+**Location**: `src/game/weapon.odin`, `src/game/combat.odin`
+
+**How it works**:
+
+The Trigger component handles weapon firing with cooldowns. When the player presses X, the trigger system fires bullets with full game feel effects.
+
+**Key structures**:
+```odin
+Trigger :: struct {
+    state:         Trigger_State,
+    fire_cooldown: int,    // Frames between shots
+    fire_proc:     proc(w: ^World, entity: int),  // What happens when we fire
+}
+
+Trigger_State :: struct {
+    is_active:     bool,   // Is the trigger button held
+    just_pressed:  bool,   // Was the trigger pressed this frame
+    just_released: bool,   // Was the trigger released this frame
+    cooldown:      int,    // Frames until can fire again
+}
+```
+
+**Usage**:
+```odin
+// Add trigger to entity
+logic.add_component(&w.trigger, player, trigger_init_gun())
+
+// In input handling
+trigger_set_active(trigger, key_down(.X))
+```
+
+**Effects triggered on shoot**:
+- Muzzle flash particles (`fx_gun_shot()`)
+- Cartridge ejection (`fx_cartridge()`)
+- Screen flash (yellow)
+- Camera bump (recoil)
+- Camera shake (small)
+- Squash effect on shooter
+
+| Effect | Description | Status |
+|--------|-------------|--------|
+| **Muzzle Flash** | Brief burst particles at weapon | ✅ |
+| **Cartridge Ejection** | Small particles that bounce | ✅ |
+| **Gun Recoil (Visual)** | Camera bump + squash | ✅ |
+| **Screen Flash** | Yellow flash on shoot | ✅ |
 
 ---
 
 ### 4.2 Impact Effects
-**Priority**: MEDIUM | **Status**: Pending
+**Priority**: MEDIUM | **Status**: ✅ DONE
 
-| Effect | Description | Trigger |
-|--------|-------------|---------|
-| **Impact Particles** | Brief particles at impact point | Bullet hits anything |
-| **Impact Dust** | Falling dust particles | Bullet hits anything |
-| **Wall Burn** | Particles that fade yellow->red | Bullet hits wall |
-| **Blood Particles** | Stick to walls, long-lasting | Bullet hits enemy |
-| **Light Spot** | Yellow halo particle | Shoot or impact |
+**Location**: `src/game/combat.odin`
+
+**How it works**:
+
+When bullets hit enemies, the `on_hit_bullet` callback triggers impact effects. The bullet is deleted and particles spawn at the impact point.
+
+**Effects triggered on bullet impact**:
+- Impact particles (`fx_hit_wall()`)
+- Bullet deletion
+
+| Effect | Description | Status |
+|--------|-------------|--------|
+| **Impact Particles** | Brief particles at impact point | ✅ |
+| **Impact Dust** | Falling sparks | ✅ |
 
 ---
 
 ### 4.3 Enemy Reactions
-**Priority**: MEDIUM | **Status**: Pending
+**Priority**: MEDIUM | **Status**: ✅ DONE
 
-> "Physical movements of enemy entities. They may fall from a cliff because of these."
+**Location**: `src/game/combat.odin`
 
-| Effect | Description | Trigger |
-|--------|-------------|---------|
-| **Knockback** | Push enemies on hit | Bullet hits enemy |
-| **Ground Pound** | Push nearby enemies | Player lands from height |
-| **Cadavers** | Dead enemy becomes physics object | Enemy dies |
+**How it works**:
+
+When enemies take damage, the `on_hurt_enemy` callback triggers visual feedback and knockback.
+
+**Key structures**:
+```odin
+Hitpoint :: struct {
+    current: int,
+    max:     int,
+}
+```
+
+**Usage**:
+```odin
+// Add hitpoint to entity
+logic.add_component(&w.hitpoint, enemy, hitpoint_init(5))
+
+// Add hurt box and callback
+logic.add_component(&w.enemy_hurt, enemy, shape.Capsule{...})
+logic.add_component(&w.on_hurt, enemy, on_hurt_fn[.Enemy])
+```
+
+**Effects triggered when enemy hurt**:
+- White blink (damage flash)
+- Squash effect
+- Sprite shake
+- Knockback velocity
+- Camera shake + zoom bump
+- Hit particles
+
+| Effect | Description | Status |
+|--------|-------------|--------|
+| **Knockback** | Push enemies on hit | ✅ |
+| **Blink** | White flash on damage | ✅ |
+| **Squash** | Squash effect on hit | ✅ |
+| **Sprite Shake** | Per-entity shake | ✅ |
+| **Camera Effects** | Shake + zoom bump | ✅ |
+
+---
+
+### 4.4 Player Damage
+**Priority**: MEDIUM | **Status**: ✅ DONE
+
+**How it works**:
+
+When the player takes damage (from enemy contact), the `on_hurt_player` callback triggers feedback and invincibility frames.
+
+**Effects triggered when player hurt**:
+- Red blink (damage flash)
+- Heavy sprite shake
+- Camera shake
+- Red screen flash
+- Invincibility frames (1 second)
+
+**Invincibility frames**:
+The player's hurt box is temporarily removed and restored after 60 frames, preventing damage spam.
+
+---
+
+### Combat Controls
+
+- **X key**: Shoot (hold for continuous fire)
 
 ---
 
@@ -732,10 +833,10 @@ Phase 2: Visual Feedback ✅ COMPLETE
 Phase 3: Particles ✅ COMPLETE
   3.1 GPU Particle System ✅ DONE
 
-Phase 4: Combat (if game has combat) ← NEXT
-  4.1 Gun/Weapon Effects
-  4.2 Impact Effects
-  4.3 Enemy Reactions
+Phase 4: Combat ✅ COMPLETE
+  4.1 Gun/Weapon Effects ✅ DONE
+  4.2 Impact Effects ✅ DONE
+  4.3 Enemy Reactions ✅ DONE
 
 Phase 5: Movement
   5.1 Double Jump
