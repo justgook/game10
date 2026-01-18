@@ -68,16 +68,24 @@ on_hurt_fn := [On_Hurt_Type]On_Hurt_Callback{
 
 // Bullet hits an enemy
 on_hit_bullet :: proc(w: ^World, src: int, target: int) {
-    // Get bullet position for effects
-    if pos, ok := logic.get_component(&w.position, src); ok {
-        pixel_pos := to_pixelf(pos^)
+    // Get positions for effects
+    src_pos, src_ok := logic.get_component(&w.position, src)
+    target_pos, target_ok := logic.get_component(&w.position, target)
+    
+    if src_ok && target_ok {
+        pixel_pos := to_pixelf(target_pos^)
         
-        // Spawn impact particles at bullet position (direction based on bullet velocity)
+        // Direction: bullet travel direction (for blood spray)
         dir: f32 = 0.0
         if vel, vel_ok := logic.get_component(&w.velocity, src); vel_ok {
-            dir = vel.x < 0 ? 0.0 : 3.14159  // Opposite of travel direction
+            dir = vel.x > 0 ? 0.0 : 3.14159  // Same as travel direction
         }
-        fx_hit_wall(&w.particles, pixel_pos.x, pixel_pos.y, dir)
+        
+        // Impact flash
+        fx_hit_entity(&w.particles, pixel_pos.x, pixel_pos.y, dir)
+        
+        // Blood spray!
+        fx_blood(&w.particles, pixel_pos.x, pixel_pos.y, dir, 1.0)
     }
     
     // Delete the bullet
@@ -156,16 +164,8 @@ on_hurt_enemy :: proc(w: ^World, src: int, target: int) {
     camera.camera_shake(&w.cam, 2.0, 2.0, 0.1)
     camera.camera_bump_zoom(&w.cam, 0.02)
     
-    // Spawn hit particles at enemy position
-    if pos, ok := logic.get_component(&w.position, target); ok {
-        pixel_pos := to_pixelf(pos^)
-        // Direction from damage source
-        dir: f32 = 0.0
-        if src_pos, src_ok := logic.get_component(&w.position, src); src_ok {
-            dir = src_pos.x < pos.x ? 3.14159 : 0.0  // Particles fly away from source
-        }
-        fx_hit_wall(&w.particles, pixel_pos.x, pixel_pos.y, dir)
-    }
+    // Note: Blood and impact particles are spawned in on_hit_bullet
+    // This callback is for the enemy's reaction (blink, shake, knockback)
 }
 
 // =============================================================================
@@ -192,8 +192,8 @@ apply_knockback :: proc(w: ^World, src: int, target: int, power: int) {
         target_vel.x = -power
     }
     
-    // Small upward pop
-    target_vel.y = -power / 2
+    // Small upward pop (Y+ is UP)
+    target_vel.y = power / 2
 }
 
 // =============================================================================
