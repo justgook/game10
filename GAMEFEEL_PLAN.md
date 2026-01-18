@@ -21,7 +21,7 @@ This document outlines the features to implement from the [deepnight/gamefeel](h
 - [x] **2.4 Screen Flash** - Full-screen color flash
 
 ### Phase 3: Particles
-- [ ] **3.1 GPU Particle System** - Pooled particles with physics
+- [x] **3.1 GPU Particle System** - Pooled particles with physics
 
 ### Phase 4: Combat Effects
 - [ ] **4.1 Gun/Weapon Effects** - Muzzle flash, cartridges, recoil
@@ -420,31 +420,81 @@ screen_flash_trigger(&w.screen_flash, r, g, b, alpha, duration)
 ## Phase 3: Particle System
 
 ### 3.1 GPU Particle System
-**Priority**: MEDIUM | **Status**: Pending
+**Priority**: MEDIUM | **Status**: ✅ DONE
 
 Pooled particle system using GPU instancing.
 
-| Feature | Description |
-|---------|-------------|
-| **Particle Pool** | Pre-allocated particle buffer |
-| **Multiple Layers** | Background, main, foreground |
-| **Blend Modes** | Normal, additive |
-| **Physics** | Velocity, gravity, friction |
-| **Visual** | Color animation, fade, scale |
+**Location**: `src/game/particles.odin`, `src/game/sys_particles.odin`, `src/game/particle_fx.odin`, `src/game/render/particles/`
 
-**Collision Approach**:
-- Particles check collision in compute/update pass
-- Store collision state in particle data
-- On collision: modify velocity, change behavior
+**How it works**:
 
-**Particle Effects to Implement**:
+Pre-allocated pool of 2048 particles rendered via GPU instancing. Each particle has physics (velocity, gravity, friction), visual properties (color, alpha, scale, rotation), and lifetime management.
 
-| Effect | Description | Trigger |
-|--------|-------------|---------|
-| **Jump Smoke** | Small smoke puff | Player jumps, double-jumps, lands |
-| **Dash Trail** | Lines of blue light | Player dashes |
-| **Climb Dust** | Small dust particles | Player climbs step/cliff |
-| **Landing Impact** | Dust cloud | Player lands from height |
+**Key structures**:
+```odin
+Particle :: struct {
+    alive:       bool,
+    x, y:        f32,           // Position
+    dx, dy:      f32,           // Velocity
+    gx, gy:      f32,           // Gravity
+    frict:       f32,           // Friction (0.9 = 10% slowdown/frame)
+    scale_x, scale_y: f32,      // Scale with multipliers
+    rotation, dr: f32,          // Rotation and velocity
+    color_r, color_g, color_b: f32,  // Color with animation
+    alpha:       f32,           // Alpha with fade
+    life, max_life: f32,        // Lifetime in seconds
+    blend:       Particle_Blend,  // Normal or Additive
+    layer:       Particle_Layer,  // BG or Main
+}
+```
+
+**Usage**:
+```odin
+// Allocate particle
+p := particle_alloc(&w.particles, .Main, .Additive, x, y)
+if p != nil {
+    particle_set_color_hex(p, 0xffcc00)
+    particle_set_velocity(p, 2.0, -1.0)
+    particle_set_gravity(p, 0, 0.1)
+    particle_set_fade(p, 1.0, 0, 5.0)
+    particle_set_life(p, 0.5)
+}
+
+// Pre-built effects
+fx_land_smoke(&w.particles, x, y, 1.0)
+fx_gun_shot(&w.particles, x, y, dir)
+fx_dash(&w.particles, x, y, dir)
+fx_double_jump(&w.particles, x, y)
+```
+
+**Integration points**:
+- `world.odin`: `Particle_Pool` stored in World struct
+- `world_frame()`: `sys_particles()` updates every frame
+- `render.odin`: `render_particles()` converts to GPU instances, draws after sprites
+
+**Debug controls** (debug builds only):
+- **F12**: Test landing smoke at player position
+- **P**: Test gun shot particles with screen flash
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Particle Pool** | Pre-allocated 2048 particle buffer | ✅ |
+| **Multiple Layers** | Background, main | ✅ |
+| **Blend Modes** | Normal, additive | ✅ |
+| **Physics** | Velocity, gravity, friction | ✅ |
+| **Visual** | Color animation, fade, scale, rotation | ✅ |
+
+**Particle Effects Implemented**:
+
+| Effect | Description | Function |
+|--------|-------------|----------|
+| **Landing Smoke** | Dust cloud on landing | `fx_land_smoke()` |
+| **Double Jump** | Upward lines + smoke | `fx_double_jump()` |
+| **Dash Trail** | Blue light lines | `fx_dash()` |
+| **Gun Shot** | Muzzle flash + sparks | `fx_gun_shot()` |
+| **Light Spot** | Glowing halo | `fx_light_spot()` |
+| **Wall Impact** | Flash + falling sparks | `fx_hit_wall()` |
+| **Cartridge** | Brass shell ejection | `fx_cartridge()` |
 
 ---
 
@@ -679,10 +729,10 @@ Phase 2: Visual Feedback ✅ COMPLETE
   2.3 Sprite Shake ✅ DONE
   2.4 Screen Flash ✅ DONE
 
-Phase 3: Particles ← NEXT
-  3.1 GPU Particle System
+Phase 3: Particles ✅ COMPLETE
+  3.1 GPU Particle System ✅ DONE
 
-Phase 4: Combat (if game has combat)
+Phase 4: Combat (if game has combat) ← NEXT
   4.1 Gun/Weapon Effects
   4.2 Impact Effects
   4.3 Enemy Reactions

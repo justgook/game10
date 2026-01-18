@@ -9,6 +9,7 @@ import "core:math/linalg"
 import "logic"
 import "menu"
 import "render/debug_draw"
+import "render/particles"
 import "render/screen_flash"
 import "render/sprites"
 import "render/tilemap"
@@ -33,6 +34,7 @@ Render :: struct {
 	tilemap_front:            ^tilemap.Tilemap_Manager,
 	tilemap_back:             ^tilemap.Tilemap_Manager,
 	screen_flash_renderer:    screen_flash.Screen_Flash_Renderer,
+	particle_renderer:        particles.Particle_Renderer,
 }
 
 render_init :: proc(r: ^Render) {
@@ -87,6 +89,10 @@ render_init :: proc(r: ^Render) {
 
 	// Initialize screen flash renderer
 	r.screen_flash_renderer = screen_flash.init()
+	
+	// Initialize particle renderer
+	r.particle_renderer = particles.init()
+	particles.set_texture(&r.particle_renderer, r.tex0)
 }
 
 render_frame :: proc(w: ^World, r: ^Render) {
@@ -99,6 +105,7 @@ render_frame :: proc(w: ^World, r: ^Render) {
 
 	r.world_sprites.count = 0
 	render_sprite(w, r)
+	render_particles(w, r)
 	update_ortho(w, r)
 
 	/*====================================================================================================*/
@@ -117,6 +124,9 @@ render_frame :: proc(w: ^World, r: ^Render) {
 
 
 	sprites.sprites_draw(r.world_sprites, &r.world_ortho)
+	
+	// Draw particles (after sprites)
+	particles.draw(&r.particle_renderer, &r.world_ortho)
 
 	// Draw screen flash (after sprites, before UI)
 	if screen_flash_is_active(&w.screen_flash) {
@@ -142,6 +152,7 @@ render_cleanup :: proc(r: ^Render) {
 	}
 
 	screen_flash.cleanup(&r.screen_flash_renderer)
+	particles.cleanup(&r.particle_renderer)
 
 	when ODIN_DEBUG {
 		debug_draw.destroy_debug_draw(&debug_state.draw)
@@ -175,6 +186,11 @@ render_reloaded :: proc(r: ^Render) {
 	// Reinitialize screen flash renderer
 	screen_flash.cleanup(&r.screen_flash_renderer)
 	r.screen_flash_renderer = screen_flash.init()
+	
+	// Reinitialize particle renderer
+	particles.cleanup(&r.particle_renderer)
+	r.particle_renderer = particles.init()
+	particles.set_texture(&r.particle_renderer, r.tex0)
 }
 
 @(private = "file")

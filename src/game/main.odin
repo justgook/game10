@@ -83,7 +83,7 @@ game_event :: proc(e: ^sapp.Event) {
 			menu.toggle_debug_hud()
 			return
 		}
-		
+
 		// Debug camera effects (F1-F4)
 		when ODIN_DEBUG {
 			if e.key_code == .F1 {
@@ -148,6 +148,43 @@ game_event :: proc(e: ^sapp.Event) {
 				// Test screen flash (white - impact style)
 				screen_flash_white(&g.world.screen_flash)
 				fmt.println("Screen flash (white) triggered")
+				return
+			}
+			if e.key_code == .F12 {
+				// Test particle effects at player position
+				if pos, ok := logic.get_component(&g.world.position, g.world.player_entity); ok {
+					px := f32(pos.x) / f32(UNIT)
+					py := f32(pos.y) / f32(UNIT)
+
+					// Spawn landing smoke
+					fx_land_smoke(&g.world.particles, px, py, 1.0)
+					fmt.printfln(
+						"Particles spawned at (%v, %v), active: %v",
+						px,
+						py,
+						g.world.particles.active_count,
+					)
+				}
+				return
+			}
+			if e.key_code == .P {
+				// Test gun shot particles
+				if pos, ok := logic.get_component(&g.world.position, g.world.player_entity); ok {
+					if jump, jok := logic.get_component(&g.world.jump, g.world.player_entity);
+					   jok {
+						px := f32(pos.x) / f32(UNIT)
+						py := f32(pos.y) / f32(UNIT)
+						dir: f32 = jump.facing_right ? 1.0 : -1.0
+
+						fx_gun_shot(&g.world.particles, px + dir * 16, py - 8, dir)
+						fx_light_spot(&g.world.particles, px + dir * 20, py - 8, 0xffcc00, 0.8)
+						screen_flash_shoot(&g.world.screen_flash)
+						fmt.printfln(
+							"Gun shot particles, active: %v",
+							g.world.particles.active_count,
+						)
+					}
+				}
 				return
 			}
 		}

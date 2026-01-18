@@ -22,6 +22,8 @@ World :: struct {
 	player_entity:    int, // Track which entity is the player for camera following
 	// Screen effects (global, not per-entity)
 	screen_flash:     ScreenFlash,
+	// Particle system (global pool)
+	particles:        Particle_Pool,
 	// Components
 	position:         logic.Component_Storage(Position),
 	velocity:         logic.Component_Storage(Velocity),
@@ -57,6 +59,9 @@ world_init :: proc(w: ^World) {
 	
 	// Initialize screen effects
 	w.screen_flash = screen_flash_init()
+	
+	// Initialize particle system
+	w.particles = particle_pool_init()
 
 	// change_scene(w, "build.nosync/dd-000-000.wbin")
 	create_mock_data(w)
@@ -92,6 +97,9 @@ world_frame :: proc(w: ^World) {
 	
 	// Update screen flash (runs every frame for smooth fade)
 	screen_flash_update(&w.screen_flash, f32(sapp.frame_duration()))
+	
+	// Update particles (runs every frame for smooth animation)
+	sys_particles(w, f32(sapp.frame_duration()))
 }
 
 // Camera system - updates camera position based on tracked entity
