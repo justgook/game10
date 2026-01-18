@@ -43,6 +43,10 @@ sys_movement :: proc(w: ^World) {
 				if squash, ok := logic.get_component(&w.squash, id); ok {
 					squash_on_land(squash, power)
 				}
+				
+				// Landing smoke particles
+				pixel_pos := to_pixelf(pos^)
+				fx_land_smoke(&w.particles, pixel_pos.x, pixel_pos.y, power)
 			}
 		}
 		

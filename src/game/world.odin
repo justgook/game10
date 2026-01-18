@@ -92,6 +92,7 @@ world_frame :: proc(w: ^World) {
 			sys_sprite_shake(w)
 			sys_combat(w)
 			sys_trigger(w)
+			sys_bullet_collision(w)
 
 			w.accumulator -= w.sim_frame_length
 		}

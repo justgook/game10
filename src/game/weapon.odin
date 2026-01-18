@@ -1,6 +1,7 @@
 package game
 
 import "camera"
+import "grid"
 import "logic"
 import "shape"
 
@@ -83,9 +84,11 @@ fire_bullet :: proc(w: ^World, entity: int) {
     // Create bullet entity
     bullet := create_entity(w)
     
-    // Position bullet at shooter's position (offset slightly in facing direction)
-    bullet_offset := 10 * UNIT * (facing_right ? 1 : -1)
-    logic.add_component(&w.position, bullet, Position{pos.x + bullet_offset, pos.y - 8 * UNIT})
+    // Position bullet at shooter's hands (Y+ is UP, so add to go up from feet)
+    // Hands are roughly at Y + 12 units from feet
+    bullet_offset_x := 10 * UNIT * (facing_right ? 1 : -1)
+    bullet_offset_y := 12 * UNIT  // Up from feet to hands
+    logic.add_component(&w.position, bullet, Position{pos.x + bullet_offset_x, pos.y + bullet_offset_y})
     
     // Bullet velocity
     bullet_speed := 12 * UNIT
@@ -104,15 +107,16 @@ fire_bullet :: proc(w: ^World, entity: int) {
     
     // === GAME FEEL EFFECTS ===
     
-    // Get pixel position for effects
+    // Get pixel position for effects (at hand height)
     pixel_pos := to_pixelf(pos^)
+    hand_y := pixel_pos.y + 12  // Hand height in pixels
     dir: f32 = facing_right ? 0.0 : 3.14159
     
-    // Muzzle flash particles
-    fx_gun_shot(&w.particles, pixel_pos.x, pixel_pos.y - 8, dir)
+    // Muzzle flash particles at hand position
+    fx_gun_shot(&w.particles, pixel_pos.x, hand_y, dir)
     
-    // Cartridge ejection
-    fx_cartridge(&w.particles, pixel_pos.x, pixel_pos.y - 8, dir)
+    // Cartridge ejection at hand position
+    fx_cartridge(&w.particles, pixel_pos.x, hand_y, dir)
     
     // Screen flash (subtle yellow)
     screen_flash_shoot(&w.screen_flash)
@@ -134,6 +138,53 @@ fire_bullet :: proc(w: ^World, entity: int) {
 bullet_timeout :: proc(w: ^World, entity: int, data: rawptr) {
     // Timer has delete_on_complete = true, so entity will be deleted
     // We could spawn fade-out particles here if desired
+}
+
+// =============================================================================
+// BULLET COLLISION SYSTEM
+// =============================================================================
+
+// System to check bullet collisions with walls
+// Bullets are identified by having player_hit but no collider
+sys_bullet_collision :: proc(w: ^World) {
+    // View bullets: entities with player_hit, position, velocity (but no collider)
+    view := logic.view(&w.player_hit, &w.position, &w.velocity)
+    
+    // Collect bullets to delete (can't delete during iteration)
+    bullets_to_delete: [dynamic]int
+    defer delete(bullets_to_delete)
+    
+    for entity, hit_circle, pos, vel in logic.each(&view) {
+        // Skip if this entity has a collider (it's not a bullet, it's a character)
+        if _, has_collider := logic.get_component(&w.collider, entity); has_collider {
+            continue
+        }
+        
+        // Check if bullet path intersects any wall
+        movement := [4]int{pos.x, pos.y, pos.x + vel.x, pos.y + vel.y}
+        
+        found := grid.query_segment(&w.grid, &movement)
+        defer delete(found)
+        
+        for wall in found {
+            if shape.segment_segment_test(wall, &movement) {
+                // Hit a wall! Spawn impact effect and mark for deletion
+                pixel_pos := to_pixelf(pos^)
+                
+                // Direction for particles (opposite of bullet travel)
+                dir: f32 = vel.x > 0 ? 3.14159 : 0.0
+                fx_hit_wall(&w.particles, pixel_pos.x, pixel_pos.y, dir)
+                
+                append(&bullets_to_delete, entity)
+                break
+            }
+        }
+    }
+    
+    // Delete bullets that hit walls
+    for bullet in bullets_to_delete {
+        entity_delete(w, bullet)
+    }
 }
 
 // =============================================================================

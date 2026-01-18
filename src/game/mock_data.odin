@@ -42,6 +42,9 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(&w.sprite, enemy, Sprite{uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}}) // Same sprite for now
 	logic.add_component(&w.collider, enemy, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.jump, enemy, JumpState{})
+	// AI brain (non-zero = AI controlled, walks and turns at walls)
+	logic.add_component(&w.brain, enemy, Brain(1))
+	logic.add_component(&w.input, enemy, Input{x = -1})  // Start walking left
 	// Combat components
 	logic.add_component(&w.hitpoint, enemy, hitpoint_init(5))
 	logic.add_component(&w.enemy_hurt, enemy, shape.Capsule{y = 14 * UNIT, radius = 8 * UNIT, height = 16 * UNIT})
