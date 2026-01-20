@@ -184,7 +184,6 @@ sys_bullet_collision :: proc(w: ^World) {
 
 	// Delete bullets that hit walls
 	for bullet in bullets_to_delete {
-		fmt.println("delete bullet")
 		entity_delete(w, bullet)
 	}
 }

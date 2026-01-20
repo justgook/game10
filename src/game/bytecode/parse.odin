@@ -1,29 +1,28 @@
 package bytcode
 
-World :: struct {}
-Entity_ID :: int
+Bytecode_Opcode :: distinct u16
 
-Opcode :: distinct u16
-Prefab_Decoder :: proc(ctx: ^Prefab_Context, data: []byte)
+Prefab_Decoder :: proc($A, $B: typeid, ctx: ^Prefab_Context(A, B), data: []byte)
 
-Prefab_Registry :: struct {
-	decoders: [dynamic]Prefab_Decoder,
+
+Prefab_Registry :: struct($A, $B: typeid) {
+	decoders: [dynamic]Prefab_Decoder(A, B),
 }
 
-Prefab_Context :: struct {
-	world:           ^World,
+Prefab_Context :: struct($A, $B: typeid) {
+	world:           ^A,
 	offset:          int,
-	entity:          Entity_ID,
+	entity:          B,
 	animation_index: int,
 }
 
-register :: proc(reg: ^Prefab_Registry, d: Prefab_Decoder) -> Opcode {
+register_loader :: proc(reg: ^Prefab_Registry($A, $B), d: Prefab_Decoder) -> Bytecode_Opcode {
 	idx := len(reg.decoders)
 	append(&reg.decoders, d)
-	return Opcode(idx)
+	return Bytecode_Opcode(idx)
 }
 
-load :: proc(reg: ^Prefab_Registry, w: ^World, data: []byte) {
+load_bytecode :: proc(reg: ^Prefab_Registry, w: ^$T, data: []byte) {
 	ctx := Prefab_Context {
 		world  = w,
 		offset = 0,
@@ -31,8 +30,8 @@ load :: proc(reg: ^Prefab_Registry, w: ^World, data: []byte) {
 	}
 
 	for ctx.offset < len(data) {
-		opcode := (^Opcode)(&data[ctx.offset])^
-		ctx.offset += size_of(Opcode)
+		opcode := (^Bytecode_Opcode)(&data[ctx.offset])^
+		ctx.offset += size_of(Bytecode_Opcode)
 
 		// opcode := read(u16, data, &ctx.offset)
 
