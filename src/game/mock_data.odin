@@ -11,7 +11,11 @@ create_mock_data :: proc(w: ^World) {
 	player := create_entity(w)
 	logic.add_component(&w.velocity, player, Velocity{})
 	logic.add_component(&w.position, player, Position{150 * UNIT, 128 * UNIT})
-	logic.add_component(&w.sprite, player, Sprite{uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}})
+	logic.add_component(
+		&w.sprite,
+		player,
+		Sprite{offset = {0, 16 * UNIT}, uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}},
+	)
 	logic.add_component(&w.collider, player, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.input, player, Input{})
 	logic.add_component(&w.jump, player, JumpState{})
@@ -24,7 +28,7 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(
 		&w.player_hurt,
 		player,
-		shape.Capsule{y = 14 * UNIT, radius = 6 * UNIT, height = 12 * UNIT},
+		shape.Capsule{y = 10 * UNIT, radius = 6 * UNIT, height = 14 * UNIT},
 	)
 	logic.add_component(&w.on_hurt, player, on_hurt_fn[.Player])
 	logic.add_component(&w.trigger, player, trigger_init_gun())
@@ -39,7 +43,11 @@ create_mock_data :: proc(w: ^World) {
 	enemy := create_entity(w)
 	logic.add_component(&w.position, enemy, Position{300 * UNIT, 128 * UNIT})
 	logic.add_component(&w.velocity, enemy, Velocity{})
-	logic.add_component(&w.sprite, enemy, Sprite{uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}}) // Same sprite for now
+	logic.add_component(
+		&w.sprite,
+		enemy,
+		Sprite{offset = {0, 16 * UNIT}, uv = {0.7410926, 0.45657569, 0.78384799, 0.53101736}},
+	)
 	logic.add_component(&w.collider, enemy, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.jump, enemy, JumpState{})
 	// AI brain (non-zero = AI controlled, walks and turns at walls)
