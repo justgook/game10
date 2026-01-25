@@ -13,7 +13,6 @@ import "render/particles"
 import "render/screen_flash"
 import "render/sprites"
 import "render/tilemap"
-import "shape"
 import sapp "sokol/app"
 import sg "sokol/gfx"
 import sglue "sokol/glue"
@@ -89,7 +88,7 @@ render_init :: proc(r: ^Render) {
 
 	// Initialize screen flash renderer
 	r.screen_flash_renderer = screen_flash.init()
-	
+
 	// Initialize particle renderer
 	r.particle_renderer = particles.init()
 	particles.set_texture(&r.particle_renderer, r.tex0)
@@ -98,7 +97,7 @@ render_init :: proc(r: ^Render) {
 render_frame :: proc(w: ^World, r: ^Render) {
 	// Prepare HUD data
 	hud_data := prepare_hud_data(w, r)
-	
+
 	// Start nuklear frame and draw UI
 	ctx := menu.new_frame()
 	menu.draw_with_hud(ctx, hud_data)
@@ -124,7 +123,7 @@ render_frame :: proc(w: ^World, r: ^Render) {
 
 
 	sprites.sprites_draw(r.world_sprites, &r.world_ortho)
-	
+
 	// Draw particles (after sprites)
 	particles.draw(&r.particle_renderer, &r.world_ortho)
 
@@ -186,7 +185,7 @@ render_reloaded :: proc(r: ^Render) {
 	// Reinitialize screen flash renderer
 	screen_flash.cleanup(&r.screen_flash_renderer)
 	r.screen_flash_renderer = screen_flash.init()
-	
+
 	// Reinitialize particle renderer
 	particles.cleanup(&r.particle_renderer)
 	r.particle_renderer = particles.init()

@@ -25,6 +25,8 @@ World :: struct {
 	screen_flash:     ScreenFlash,
 	// Particle system (global pool)
 	particles:        Particle_Pool,
+	// Sprite atlas (shared UV coordinates for animations)
+	sprite_atlas:     SpriteAtlas,
 	// Components
 	position:         logic.Component_Storage(Position),
 	velocity:         logic.Component_Storage(Velocity),
@@ -49,6 +51,9 @@ World :: struct {
 	// Combat components
 	hitpoint:         logic.Component_Storage(Hitpoint),
 	trigger:          logic.Component_Storage(Trigger),
+	// Animation
+	animation:        logic.Component_Storage(Animation),
+	anim_controller:  logic.Component_Storage(AnimController),
 }
 
 world_init :: proc(w: ^World) {
@@ -113,6 +118,12 @@ world_frame :: proc(w: ^World) {
 
 	// Update particles (runs every frame for smooth animation)
 	sys_particles(w, f32(sapp.frame_duration()))
+
+	// Update animation controller (decides which animation to play)
+	sys_anim_controller(w, f32(sapp.frame_duration()))
+
+	// Update animations (runs every frame for smooth playback)
+	sys_animation(w, f32(sapp.frame_duration()))
 }
 
 // Camera system - updates camera position based on tracked entity
@@ -167,6 +178,8 @@ entity_delete :: proc(w: ^World, entity_id: int) {
 	logic.delete_component(&w.sprite_shake, entity_id)
 	logic.delete_component(&w.hitpoint, entity_id)
 	logic.delete_component(&w.trigger, entity_id)
+	logic.delete_component(&w.animation, entity_id)
+	logic.delete_component(&w.anim_controller, entity_id)
 }
 
 world_cleanup :: proc(w: ^World) {
@@ -191,6 +204,8 @@ world_cleanup :: proc(w: ^World) {
 	logic.destroy_storage(&w.sprite_shake)
 	logic.destroy_storage(&w.hitpoint)
 	logic.destroy_storage(&w.trigger)
+	logic.destroy_storage(&w.animation)
+	logic.destroy_storage(&w.anim_controller)
 
 	grid.destroy_grid(&w.grid)
 	delete(w.segments)

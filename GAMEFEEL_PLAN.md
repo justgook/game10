@@ -39,6 +39,7 @@ This document outlines the features to implement from the [deepnight/gamefeel](h
 - [ ] **6.3 Affect System** - Status effects (stun, slow)
 
 ### Phase 7: Animation
+- [x] **7.0 Animation System** - Core animation player component
 - [ ] **7.1 Basic Animations** - Idle, run, jump states
 - [ ] **7.2 Weapon Animations** - Aim, shoot, recoil
 
@@ -734,18 +735,131 @@ Temporary gameplay effects with duration.
 
 ## Phase 7: Animation & Rendering
 
-### 7.1 Basic Animations
-**Priority**: LOW | **Status**: Pending
+### 7.0 Animation System ✅
+**Priority**: HIGH | **Status**: DONE
+
+**Location**: 
+- `src/game/animation.odin` - Core animation data structures
+- `src/game/sys_animation.odin` - Animation playback system
+- `src/game/sprite_atlas.odin` - Shared UV storage
+- `src/game/anim_controller.odin` - State machine for switching animations
+
+**How it works**:
+
+Three-level architecture:
+1. **SpriteAtlas** - Shared UV coordinates (avoids duplication)
+2. **AnimDef** - Animation definition (frame indices, timing, looping)
+3. **Animation** - Per-entity playback state
+4. **AnimController** - State machine that switches animations based on gameplay
+
+**Key structures**:
+```odin
+// UV stored in shared atlas - frames reference by index
+SpriteAtlas :: struct {
+    uvs: []UV,  // All UV coordinates in one place
+}
+
+// Single frame references UV by index
+AnimFrame :: struct {
+    uv_index: int,    // Index into SpriteAtlas.uvs
+    offset:   [2]int, // Sprite offset in subpixels
+    duration: f32,    // Seconds this frame displays
+    flip:     Flip,   // FLIP_NONE, FLIP_X, FLIP_Y, FLIP_XY
+}
+
+// Animation definition - shared, multiple entities reference same def
+AnimDef :: struct {
+    frames:  []AnimFrame,
+    looping: bool,
+}
+
+// Per-entity playback state (component)
+Animation :: struct {
+    def:         ^AnimDef,
+    frame_index: int,
+    frame_timer: f32,
+    playing:     bool,
+    speed:       f32,
+    on_loop:     proc(w: ^World, entity: int),
+    on_frame:    proc(w: ^World, entity: int, frame: int),
+}
+
+// Animation set for an entity type
+AnimSet :: struct {
+    idle, run, jump_up, jump_down, land, dash, hurt: ^AnimDef,
+}
+
+// State machine component
+AnimController :: struct {
+    anims:         ^AnimSet,
+    current_state: AnimState,  // Idle, Run, Jump_Up, etc.
+    facing:        int,        // -1 = left, 1 = right (for flip)
+    lock_timer:    f32,        // For non-interruptible animations
+}
+```
+
+**Usage**:
+```odin
+// Define UV atlas (all coordinates in one place)
+atlas_uvs := []UV{
+    {0.0, 0.0, 0.1, 0.1},  // Index 0: idle frame 1
+    {0.1, 0.0, 0.2, 0.1},  // Index 1: idle frame 2
+    // ... more UVs
+}
+w.sprite_atlas = SpriteAtlas{uvs = atlas_uvs[:]}
+
+// Define animation using UV indices
+idle_frames := []AnimFrame{
+    {uv_index = 0, offset = {0, 16*UNIT}, duration = 0.5, flip = FLIP_NONE},
+    {uv_index = 1, offset = {0, 15*UNIT}, duration = 0.5, flip = FLIP_NONE},
+}
+idle_def := AnimDef{frames = idle_frames[:], looping = true}
+
+// Create animation set
+hero_anims := AnimSet{
+    idle = &idle_def,
+    run = &run_def,
+    // ...
+}
+
+// Add components to entity
+logic.add_component(&w.animation, player, animation_create(&idle_def))
+logic.add_component(&w.anim_controller, player, anim_controller_create(&hero_anims))
+```
+
+**Integration points**:
+- `world.odin`: sprite_atlas, animation, anim_controller storages
+- `sys_anim_controller`: Checks velocity/grounded state, switches animations
+- `sys_animation`: Advances frames, updates Sprite.uv from atlas
+- Both run every frame (not fixed timestep) for smooth playback
+
+**Flip support**:
+- `Sprite.flip` - Per-sprite flip flag
+- `AnimFrame.flip` - Per-frame flip (for specific poses)
+- `AnimController.facing` - Auto-flips based on movement direction
+
+---
+
+### 7.1 Basic Animations ✅
+**Priority**: LOW | **Status**: DONE (placeholder UVs)
 
 > "Activate simple animations for the player."
 
-| Animation | States |
-|-----------|--------|
-| **Idle** | Standing still |
-| **Run** | Moving horizontally |
-| **Jump Up** | Rising in air |
-| **Jump Down** | Falling |
-| **Land** | Brief landing pose |
+**Implemented animations** (with placeholder UVs - update coordinates in mock_data.odin):
+
+| Animation | Frames | Trigger |
+|-----------|--------|---------|
+| **Idle** | 2 frames (breathing) | Standing still |
+| **Run** | 4 frames (bobbing) | Horizontal movement on ground |
+| **Jump Up** | 1 frame | Rising in air (vel.y < 0) |
+| **Jump Down** | 1 frame | Falling (vel.y > 0) |
+| **Land** | 1 frame | Brief pose after landing |
+| **Hurt** | 1 frame | When damaged |
+
+**To update with real sprites**:
+1. Export sprites to atlas
+2. Update UV indices in `mock_data.odin` (UV_HERO_IDLE_1, etc.)
+3. Update `mock_atlas_uvs` array with real coordinates
 
 ---
 
@@ -848,9 +962,10 @@ Phase 6: Game State
   6.2 Control Locks
   6.3 Affect System
 
-Phase 7: Animation
-  7.1 Basic Animations
-  7.2 Weapon Animations
+Phase 7: Animation ✅ COMPLETE (placeholder UVs)
+  7.0 Animation System ✅ DONE
+  7.1 Basic Animations ✅ DONE
+  7.2 Weapon Animations (pending)
 ```
 
 ---

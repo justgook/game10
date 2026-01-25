@@ -3,10 +3,18 @@ package game
 import "logic"
 import sapp "sokol/app"
 
+// Flip flags for sprite rendering
+Flip :: distinct u8
+FLIP_NONE :: Flip(0)
+FLIP_X :: Flip(1) // Flip horizontally
+FLIP_Y :: Flip(2) // Flip vertically
+FLIP_XY :: Flip(3) // Flip both
+
 Sprite :: struct {
 	uv:        [4]f32,
 	offset:    [2]int,
-	base_size: [2]f32,  // Base sprite size (before squash/stretch)
+	base_size: [2]f32, // Base sprite size (before squash/stretch)
+	flip:      Flip, // Flip flags (FLIP_X, FLIP_Y, or FLIP_XY)
 }
 
 // Default sprite size if not specified
@@ -25,6 +33,7 @@ render_sprite :: proc(w: ^World, r: ^Render) {
 		target.uv = s.uv
 		target.pos = to_pixelf(pos^ + s.offset)
 		target.opacity = 1
+		target.flip = u8(s.flip)
 		
 		// Apply sprite shake offset if component exists
 		if shake, ok := logic.get_component(&w.sprite_shake, id); ok {
