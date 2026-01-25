@@ -44,7 +44,7 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(&w.jump, enemy, JumpState{})
 	// AI brain (non-zero = AI controlled, walks and turns at walls)
 	logic.add_component(&w.brain, enemy, Brain(1))
-	logic.add_component(&w.input, enemy, Input{x = -1})  // Start walking left
+	logic.add_component(&w.input, enemy, Input{x = -1}) // Start walking left
 	// Combat components
 	logic.add_component(&w.hitpoint, enemy, hitpoint_init(5))
 	logic.add_component(&w.enemy_hurt, enemy, shape.Capsule{y = 14 * UNIT, radius = 8 * UNIT, height = 16 * UNIT})
@@ -59,8 +59,8 @@ create_mock_data :: proc(w: ^World) {
 
 	append(&w.segments, Segment{64 * UNIT, 64 * UNIT, 576 * UNIT, 64 * UNIT})
 	append(&w.segments, Segment{576 * UNIT, 320 * UNIT, 64 * UNIT, 320 * UNIT})
-	append(&w.segments, Segment{64 * UNIT, 64 * UNIT, 64 * UNIT, 320 * UNIT})
-	append(&w.segments, Segment{576 * UNIT, 320 * UNIT, 576 * UNIT, 64 * UNIT})
+	append(&w.segments, Segment{64 * UNIT, 320 * UNIT, 64 * UNIT, 64 * UNIT})
+	append(&w.segments, Segment{576 * UNIT, 64 * UNIT, 576 * UNIT, 320 * UNIT})
 
 	append(&w.segments, Segment{128 * UNIT, 128 * UNIT, 256 * UNIT, 128 * UNIT})
 	append(&w.segments, Segment{320 * UNIT, 192 * UNIT, 448 * UNIT, 192 * UNIT})

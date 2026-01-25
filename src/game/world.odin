@@ -1,6 +1,7 @@
 package game
 
 import "camera"
+import "core:bytes"
 import "core:fmt"
 import "grid"
 import "logic"
@@ -59,15 +60,21 @@ world_init :: proc(w: ^World) {
 	// Initialize camera
 	w.cam = camera.camera_init({sapp.widthf() / 2, sapp.heightf() / 2}, 1.0)
 	w.player_entity = -1
-	
+
 	// Initialize screen effects
 	w.screen_flash = screen_flash_init()
-	
+
 	// Initialize particle system
 	w.particles = particle_pool_init()
 
 	// change_scene(w, "build.nosync/dd-000-000.wbin")
 	create_mock_data(w)
+
+	fmt.println("================================================================================")
+	data := []byte{0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}
+	bytecode_load(w, data)
+	fmt.println("loaded", "world", w.position)
+	fmt.println("================================================================================")
 
 }
 
@@ -100,10 +107,10 @@ world_frame :: proc(w: ^World) {
 
 	// Update camera (runs every frame for smooth movement)
 	sys_camera(w)
-	
+
 	// Update screen flash (runs every frame for smooth fade)
 	screen_flash_update(&w.screen_flash, f32(sapp.frame_duration()))
-	
+
 	// Update particles (runs every frame for smooth animation)
 	sys_particles(w, f32(sapp.frame_duration()))
 }
