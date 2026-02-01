@@ -461,6 +461,14 @@ SOKOL_NUKLEAR_API_DECL nk_flags snk_edit_string(struct nk_context *ctx, nk_flags
 #endif
 SOKOL_NUKLEAR_API_DECL void snk_shutdown(void);
 
+/* DEBUG: Get buffered mouse position for diagnostics */
+SOKOL_NUKLEAR_API_DECL void snk_get_mouse_pos(int* x, int* y);
+/* DEBUG: Get nuklear context's actual mouse position (what cursor uses) */
+SOKOL_NUKLEAR_API_DECL void snk_get_nk_mouse_pos(float* x, float* y);
+
+/* FIX: Update mouse position right before render to minimize lag */
+SOKOL_NUKLEAR_API_DECL void snk_update_mouse(void);
+
 #ifdef __cplusplus
 } /* extern "C" */
 
@@ -2972,10 +2980,11 @@ SOKOL_API_IMPL struct nk_context* snk_new_frame(void) {
     SOKOL_ASSERT(_SNK_INIT_COOKIE == _snuklear.init_cookie);
     #if !defined(SOKOL_NUKLEAR_NO_SOKOL_APP)
     nk_input_begin(&_snuklear.ctx);
-    if (_snuklear.mouse_did_move) {
-        nk_input_motion(&_snuklear.ctx, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1]);
-        _snuklear.mouse_did_move = false;
-    }
+    
+    // FIX: Always update mouse position, not just when mouse_did_move is set.
+    // This ensures the most recent position is used even if events are coalesced.
+    nk_input_motion(&_snuklear.ctx, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1]);
+    _snuklear.mouse_did_move = false;
     if (_snuklear.mouse_did_scroll) {
         nk_input_scroll(&_snuklear.ctx, nk_vec2(_snuklear.mouse_scroll[0], _snuklear.mouse_scroll[1]));
         _snuklear.mouse_did_scroll = false;
@@ -3366,6 +3375,30 @@ SOKOL_API_IMPL nk_flags snk_edit_string(struct nk_context *ctx, nk_flags flags, 
     }
     return event;
 }
+/* DEBUG: Get buffered mouse position for diagnostics */
+SOKOL_API_IMPL void snk_get_mouse_pos(int* x, int* y) {
+    SOKOL_ASSERT(_SNK_INIT_COOKIE == _snuklear.init_cookie);
+    if (x) *x = _snuklear.mouse_pos[0];
+    if (y) *y = _snuklear.mouse_pos[1];
+}
+
+/* DEBUG: Get nuklear context's actual mouse position (what cursor uses) */
+SOKOL_API_IMPL void snk_get_nk_mouse_pos(float* x, float* y) {
+    SOKOL_ASSERT(_SNK_INIT_COOKIE == _snuklear.init_cookie);
+    if (x) *x = _snuklear.ctx.input.mouse.pos.x;
+    if (y) *y = _snuklear.ctx.input.mouse.pos.y;
+}
+
+/* FIX: Update mouse position right before render to minimize lag.
+ * Call this just before snk_render() to use the most recent mouse position.
+ * This helps when mouse events arrive faster than frame rate. */
+SOKOL_API_IMPL void snk_update_mouse(void) {
+    SOKOL_ASSERT(_SNK_INIT_COOKIE == _snuklear.init_cookie);
+    // Update nuklear context with the most recent buffered mouse position
+    _snuklear.ctx.input.mouse.pos.x = (float)_snuklear.mouse_pos[0];
+    _snuklear.ctx.input.mouse.pos.y = (float)_snuklear.mouse_pos[1];
+}
+
 #endif // SOKOL_NUKLEAR_NO_SOKOL_APP
 
 #endif // SOKOL_IMPL

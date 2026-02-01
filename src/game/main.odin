@@ -55,17 +55,76 @@ game_init :: proc() {
 game_frame :: proc() {
 	world_frame(&g.world)
 
-
 	render_frame(&g.world, &g.render)
 	// free_all(context.temp_allocator)
 	reset_input_state_for_next_frame()
+
+	// DEBUG: Mouse lag diagnostic - print every 60 frames when enabled
+	if mouse_diag_enabled {
+		mouse_diag_frame_count += 1
+		mouse_diag_total_frames += 1
+		if mouse_diag_frame_count >= 60 {
+			// Compare: event -> snk buffer -> nuklear context
+			snk_x, snk_y: i32
+			menu.get_mouse_pos(&snk_x, &snk_y)
+			
+			nk_x, nk_y: f32
+			menu.get_nk_mouse_pos(&nk_x, &nk_y)
+			
+			// Calculate deltas
+			buf_to_nk_x := f32(snk_x) - nk_x
+			buf_to_nk_y := f32(snk_y) - nk_y
+			
+			// Calculate FPS and events per second
+			frame_duration := sapp.frame_duration()
+			fps := 1.0 / frame_duration if frame_duration > 0 else 0
+			events_per_sec := f64(mouse_diag_event_count) / (f64(mouse_diag_frame_count) * frame_duration) if frame_duration > 0 else 0
+			
+			fmt.printfln(
+				"MOUSE: pos=(%v,%v) | FPS=%.1f events/sec=%.1f events_in_period=%v total_frames=%v",
+				int(nk_x),
+				int(nk_y),
+				fps,
+				events_per_sec,
+				mouse_diag_event_count,
+				mouse_diag_total_frames,
+			)
+			
+			// Reset counters
+			mouse_diag_frame_count = 0
+			mouse_diag_event_count = 0
+		}
+	}
 }
 
 
 force_reset: bool
 
+// DEBUG: Mouse lag diagnostic - track event positions vs current position
+@(private = "file")
+mouse_diag_enabled := false
+@(private = "file")
+mouse_diag_event_x: f32 = 0
+@(private = "file")
+mouse_diag_event_y: f32 = 0
+@(private = "file")
+mouse_diag_frame_count: int = 0
+@(private = "file")
+mouse_diag_event_count: int = 0  // Count mouse events per diagnostic period
+@(private = "file")
+mouse_diag_total_frames: int = 0  // Total frames since start
+
 @(export)
 game_event :: proc(e: ^sapp.Event) {
+	// DEBUG: Capture mouse position from events
+	#partial switch e.type {
+	case .MOUSE_MOVE, .MOUSE_DOWN, .MOUSE_UP:
+		mouse_diag_event_x = e.mouse_x
+		mouse_diag_event_y = e.mouse_y
+		if mouse_diag_enabled {
+			mouse_diag_event_count += 1
+		}
+	}
 
 	#partial switch e.type {
 	case .KEY_DOWN:
@@ -81,6 +140,12 @@ game_event :: proc(e: ^sapp.Event) {
 		// Toggle debug HUD with F3 key
 		if e.key_code == .F3 {
 			menu.toggle_debug_hud()
+			return
+		}
+		// DEBUG: Toggle mouse diagnostic with M key
+		if e.key_code == .M {
+			mouse_diag_enabled = !mouse_diag_enabled
+			fmt.printfln("Mouse diagnostic: %v", mouse_diag_enabled ? "ENABLED" : "DISABLED")
 			return
 		}
 

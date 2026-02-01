@@ -1,12 +1,17 @@
 package game
+
 import "core:fmt"
+import "core:mem"
 import "logic"
 
 bytecode_load :: proc(w: ^World, data: []byte) {
 	ctx := &Prefab_Context{world = w}
 	reg := &Prefab_Registry{}
+
 	bytecode_register(reg, decode_entity)
+	bytecode_register(reg, decode_atlas)
 	bytecode_register(reg, proc(ctx: ^Prefab_Context, data: []byte) {decode_comp(ctx, data, &ctx.world.position)})
+
 	bytecode_loader(reg, w, data)
 }
 
@@ -17,12 +22,27 @@ decode_entity :: proc(ctx: ^Prefab_Context, data: []byte) {
 	ctx.entity = create_entity(ctx.world)
 }
 
+@(private = "file")
 decode_comp :: proc(ctx: ^Prefab_Context, data: []byte, storage: ^logic.Component_Storage($T)) {
-
 	comp := (^T)(&data[ctx.offset])^
 	ctx.offset += size_of(T)
 	fmt.println("setting component", "comp", comp)
 	logic.add_component(storage, ctx.entity, comp)
+}
+
+@(private = "file")
+decode_atlas :: proc(ctx: ^Prefab_Context, data: []byte) {
+	count := int((^u32)(&data[ctx.offset])^)
+	ctx.offset += size_of(u32)
+
+	// Point directly into the byte data (zero-copy)
+	uvs := mem.slice_ptr((^UV)(&data[ctx.offset]), count)
+	ctx.offset += count * size_of(UV)
+
+	fmt.println("decoding atlas", "uvs", uvs)
+	ctx.world.sprite_atlas = SpriteAtlas {
+		uvs = uvs,
+	}
 }
 
 
@@ -42,10 +62,9 @@ Prefab_Registry :: struct {
 
 @(private = "file")
 Prefab_Context :: struct {
-	world:           ^World,
-	offset:          int,
-	entity:          int,
-	animation_index: int,
+	world:  ^World,
+	offset: int,
+	entity: int,
 }
 
 

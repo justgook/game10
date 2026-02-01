@@ -205,6 +205,13 @@ foreign snk_clib {
 	make_image :: proc(#by_ptr desc: Image_Desc) -> Image ---
 	destroy_image :: proc(img: Image) ---
 	query_image_desc :: proc(img: Image) -> Image_Desc ---
+
+	// DEBUG: Get buffered mouse position for diagnostics
+	get_mouse_pos :: proc(x: ^c.int, y: ^c.int) ---
+	// DEBUG: Get nuklear context's actual mouse position (what cursor uses)
+	get_nk_mouse_pos :: proc(x: ^f32, y: ^f32) ---
+	// FIX: Update mouse position right before render to minimize lag
+	update_mouse :: proc() ---
 }
 
 // ============ Menu Functions (from menu.c) ============

@@ -1,7 +1,7 @@
 package game
 
+import "../entry"
 import "camera"
-import "core:bytes"
 import "core:fmt"
 import "grid"
 import "logic"
@@ -10,6 +10,7 @@ import sapp "sokol/app"
 
 
 LOCALES_DIR :: #config(LOCALES_DIR, "../../build.nosync/locales")
+GAME_DATA :: #config(GAME_DATA, "../../build.nosync/atlas.bin")
 
 Segment :: [4]int
 
@@ -76,9 +77,11 @@ world_init :: proc(w: ^World) {
 	create_mock_data(w)
 
 	fmt.println("================================================================================")
-	data := []byte{0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}
+	data, _ := entry.read_entire_file(GAME_DATA, context.temp_allocator)
+
+	// data := []byte{0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}
 	bytecode_load(w, data)
-	fmt.println("loaded", "world", w.position)
+	// fmt.println("loaded", "world", w.position)
 	fmt.println("================================================================================")
 
 }

@@ -39,7 +39,8 @@ Render :: struct {
 render_init :: proc(r: ^Render) {
 	fmt.println("Render init")
 	// test_img, success := load_test_img("assets/1.png")
-	success := load_test_img("assets/dd-000-000__FINAL__ATLAS.qoi", r)
+	// success := load_test_img("assets/dd-000-000__FINAL__ATLAS.qoi", r)
+	success := load_test_img("assets/atlas.qoi", r)
 
 	assert(success, "fail load img")
 	fmt.println("test_img", success, r.tex0)
@@ -132,6 +133,9 @@ render_frame :: proc(w: ^World, r: ^Render) {
 		screen_flash.draw(&r.screen_flash_renderer, screen_flash_get_color(&w.screen_flash))
 	}
 
+	// FIX: Update mouse position right before render to minimize cursor lag
+	// This ensures we use the most recent mouse position for cursor drawing
+	menu.update_mouse()
 	menu.render(sapp.width(), sapp.height())
 	sg.end_pass()
 	/*====================================================================================================*/

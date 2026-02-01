@@ -35,6 +35,7 @@ atlas_get_uv :: proc(atlas: ^SpriteAtlas, index: int) -> UV {
 	if atlas == nil || index < 0 || index >= len(atlas.uvs) {
 		return UV{0, 0, 0, 0}
 	}
+
 	return atlas.uvs[index]
 }
 
@@ -42,12 +43,8 @@ atlas_get_uv :: proc(atlas: ^SpriteAtlas, index: int) -> UV {
 uv_from_pixels :: proc(x, y, w, h: int, atlas_width, atlas_height: int) -> UV {
 	aw := f32(atlas_width)
 	ah := f32(atlas_height)
-	return UV{
-		f32(x) / aw,
-		f32(y) / ah,
-		f32(x + w) / aw,
-		f32(y + h) / ah,
-	}
+
+	return UV{f32(x) / aw, f32(y) / ah, f32(x + w) / aw, f32(y + h) / ah}
 }
 
 // Helper to create UV from tile coordinates (for grid-based atlases)
