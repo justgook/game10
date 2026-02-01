@@ -72,6 +72,7 @@ Prefab_Context :: struct {
 bytecode_register :: proc(reg: ^Prefab_Registry, d: Prefab_Decoder) -> Bytecode_Opcode {
 	idx := len(reg.decoders)
 	append(&reg.decoders, d)
+
 	return Bytecode_Opcode(idx)
 }
 

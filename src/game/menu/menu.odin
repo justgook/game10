@@ -206,12 +206,6 @@ foreign snk_clib {
 	destroy_image :: proc(img: Image) ---
 	query_image_desc :: proc(img: Image) -> Image_Desc ---
 
-	// DEBUG: Get buffered mouse position for diagnostics
-	get_mouse_pos :: proc(x: ^c.int, y: ^c.int) ---
-	// DEBUG: Get nuklear context's actual mouse position (what cursor uses)
-	get_nk_mouse_pos :: proc(x: ^f32, y: ^f32) ---
-	// FIX: Update mouse position right before render to minimize lag
-	update_mouse :: proc() ---
 }
 
 // ============ Menu Functions (from menu.c) ============
@@ -229,6 +223,27 @@ foreign menu_clib {
 	toggle_debug_hud :: proc() ---
 	set_visible :: proc(visible: c.int) ---
 	is_visible :: proc() -> c.int ---
+}
+
+// ============ Nuklear Style Functions ============
+
+// Opaque nk_context pointer for direct nuklear calls
+@(default_calling_convention = "c")
+foreign snk_clib {
+	@(link_name = "nk_style_hide_cursor")
+	nk_hide_cursor :: proc(ctx: Nk_Context) ---
+	@(link_name = "nk_style_show_cursor")
+	nk_show_cursor :: proc(ctx: Nk_Context) ---
+}
+
+// Hide the software cursor (use system cursor instead to avoid lag)
+hide_cursor :: proc(ctx: Nk_Context) {
+	nk_hide_cursor(ctx)
+}
+
+// Show the software cursor
+show_cursor :: proc(ctx: Nk_Context) {
+	nk_show_cursor(ctx)
 }
 
 // ============ Convenience Functions ============

@@ -95,12 +95,24 @@ render_init :: proc(r: ^Render) {
 	particles.set_texture(&r.particle_renderer, r.tex0)
 }
 
+@(private = "file")
+nuklear_cursor_hidden := false
+
 render_frame :: proc(w: ^World, r: ^Render) {
 	// Prepare HUD data
 	hud_data := prepare_hud_data(w, r)
 
 	// Start nuklear frame and draw UI
 	ctx := menu.new_frame()
+	
+	// FIX: Hide Nuklear's software cursor to avoid lag.
+	// The software cursor can't keep up with high mouse event rates.
+	// Using the system cursor instead provides instant response.
+	if !nuklear_cursor_hidden {
+		menu.hide_cursor(ctx)
+		nuklear_cursor_hidden = true
+	}
+	
 	menu.draw_with_hud(ctx, hud_data)
 
 	r.world_sprites.count = 0
@@ -133,9 +145,6 @@ render_frame :: proc(w: ^World, r: ^Render) {
 		screen_flash.draw(&r.screen_flash_renderer, screen_flash_get_color(&w.screen_flash))
 	}
 
-	// FIX: Update mouse position right before render to minimize cursor lag
-	// This ensures we use the most recent mouse position for cursor drawing
-	menu.update_mouse()
 	menu.render(sapp.width(), sapp.height())
 	sg.end_pass()
 	/*====================================================================================================*/
