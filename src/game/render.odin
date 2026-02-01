@@ -40,13 +40,14 @@ render_init :: proc(r: ^Render) {
 	fmt.println("Render init")
 	// test_img, success := load_test_img("assets/1.png")
 	// success := load_test_img("assets/dd-000-000__FINAL__ATLAS.qoi", r)
-	success := load_test_img("assets/atlas.qoi", r)
+	atlas_w, atlas_h, success := load_test_img("assets/atlas.qoi", r)
 
 	assert(success, "fail load img")
 	fmt.println("test_img", success, r.tex0)
 
 	r.world_sprites = sprites.sprites_init()
 	sprites.sprites_set_texture(r.tex0, r.world_sprites)
+	sprites.sprites_set_atlas_size(r.world_sprites, f32(atlas_w), f32(atlas_h))
 
 	/*================================================================================*/
 
@@ -104,7 +105,7 @@ render_frame :: proc(w: ^World, r: ^Render) {
 
 	// Start nuklear frame and draw UI
 	ctx := menu.new_frame()
-	
+
 	// FIX: Hide Nuklear's software cursor to avoid lag.
 	// The software cursor can't keep up with high mouse event rates.
 	// Using the system cursor instead provides instant response.
@@ -112,7 +113,7 @@ render_frame :: proc(w: ^World, r: ^Render) {
 		menu.hide_cursor(ctx)
 		nuklear_cursor_hidden = true
 	}
-	
+
 	menu.draw_with_hud(ctx, hud_data)
 
 	r.world_sprites.count = 0
@@ -212,7 +213,7 @@ update_ortho :: proc(w: ^World, r: ^Render) {
 }
 
 @(require_results)
-load_test_img :: proc(filename: string, r: ^Render) -> (ok: bool) {
+load_test_img :: proc(filename: string, r: ^Render) -> (width: int, height: int, ok: bool) {
 	img_data := entry.read_entire_file(filename, context.temp_allocator) or_return
 
 	img, img_err := qoi.load_from_bytes(img_data, allocator = context.temp_allocator)
@@ -232,7 +233,7 @@ load_test_img :: proc(filename: string, r: ^Render) -> (ok: bool) {
 
 	r.tex0 = sg.make_image(desc)
 
-	return true
+	return img.width, img.height, true
 }
 
 @(private = "file")

@@ -13,7 +13,7 @@ in vec2 inst_pos;
 in float inst_z;
 in float inst_opacity;
 in uint inst_flip_flags;
-in vec2 inst_size; // TODO: add math to calculate it in shader
+in vec2 inst_size;
 in vec4 inst_uv;
 in vec4 inst_color_add;  // Additive color for blink/flash effects (RGB + intensity)
 

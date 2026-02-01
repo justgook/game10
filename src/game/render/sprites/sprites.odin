@@ -20,10 +20,11 @@ Sprite_Instance :: struct {
 }
 
 Sprites :: struct {
-	instances: [SPRITE_RENDER_MAX]Sprite_Instance,
-	count:     int,
-	pip:       sg.Pipeline,
-	bind:      sg.Bindings,
+	instances:  [SPRITE_RENDER_MAX]Sprite_Instance,
+	count:      int,
+	pip:        sg.Pipeline,
+	bind:       sg.Bindings,
+	atlas_size: [2]f32,
 }
 
 sprites_cleanup :: proc(manager: ^Sprites) {
@@ -33,6 +34,10 @@ sprites_cleanup :: proc(manager: ^Sprites) {
 
 sprites_set_texture :: proc(tex0: sg.Image, manager: ^Sprites) {
 	manager.bind.views[VIEW_tex0] = sg.make_view({texture = {image = tex0}})
+}
+
+sprites_set_atlas_size :: proc(manager: ^Sprites, width, height: f32) {
+	manager.atlas_size = {width, height}
 }
 
 sprites_init :: proc() -> ^Sprites {

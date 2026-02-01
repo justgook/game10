@@ -169,7 +169,7 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(
 		&w.sprite,
 		player,
-		Sprite{offset = CHAR_OFFSET, uv = PLACEHOLDER_UV, base_size = {18, 30}, flip = FLIP_NONE},
+		Sprite{offset = CHAR_OFFSET, uv = PLACEHOLDER_UV, flip = FLIP_NONE},
 	)
 	logic.add_component(&w.collider, player, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.input, player, Input{})
@@ -203,7 +203,7 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(
 		&w.sprite,
 		enemy,
-		Sprite{offset = CHAR_OFFSET, uv = PLACEHOLDER_UV, base_size = {18, 30}, flip = FLIP_NONE},
+		Sprite{offset = CHAR_OFFSET, uv = PLACEHOLDER_UV, flip = FLIP_NONE},
 	)
 	logic.add_component(&w.collider, enemy, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.jump, enemy, JumpState{})
