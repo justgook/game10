@@ -28,11 +28,12 @@ World :: struct {
 	particles:        Particle_Pool,
 	// Sprite atlas (shared UV coordinates for animations)
 	sprite_atlas:     SpriteAtlas,
+	// Animation atlas (shared animation definitions and frames)
+	animation_atlas:  AnimationAtlas,
 	// Components
 	position:         logic.Component_Storage(Position),
 	velocity:         logic.Component_Storage(Velocity),
 	sprite:           logic.Component_Storage(Sprite),
-	// TODO: STUFF TO REFACTOR?
 	grid:             grid.Grid,
 	segments:         [dynamic]Segment,
 	input:            logic.Component_Storage(Input),

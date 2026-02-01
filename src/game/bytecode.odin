@@ -10,6 +10,7 @@ bytecode_load :: proc(w: ^World, data: []byte) {
 
 	bytecode_register(reg, decode_entity)
 	bytecode_register(reg, decode_atlas)
+	bytecode_register(reg, decode_animations)
 	bytecode_register(reg, proc(ctx: ^Prefab_Context, data: []byte) {decode_comp(ctx, data, &ctx.world.position)})
 
 	bytecode_loader(reg, w, data)
@@ -42,6 +43,29 @@ decode_atlas :: proc(ctx: ^Prefab_Context, data: []byte) {
 	fmt.println("decoding atlas", "uvs", uvs)
 	ctx.world.sprite_atlas = SpriteAtlas {
 		uvs = uvs,
+	}
+}
+
+@(private = "file")
+decode_animations :: proc(ctx: ^Prefab_Context, data: []byte) {
+	// Header: def_count (u32), frame_count (u32)
+	def_count := int((^u32)(&data[ctx.offset])^)
+	ctx.offset += size_of(u32)
+
+	frame_count := int((^u32)(&data[ctx.offset])^)
+	ctx.offset += size_of(u32)
+
+	// Point directly into byte data (zero-copy)
+	defs := mem.slice_ptr((^AnimDef)(&data[ctx.offset]), def_count)
+	ctx.offset += def_count * size_of(AnimDef)
+
+	frames := mem.slice_ptr((^AnimFrame)(&data[ctx.offset]), frame_count)
+	ctx.offset += frame_count * size_of(AnimFrame)
+
+	fmt.println("decoding animations", "defs", def_count, "frames", frame_count)
+	ctx.world.animation_atlas = AnimationAtlas {
+		defs   = defs,
+		frames = frames,
 	}
 }
 

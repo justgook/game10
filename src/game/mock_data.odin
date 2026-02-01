@@ -62,118 +62,81 @@ mock_atlas_uvs := [?]UV {
 @(private = "file")
 CHAR_OFFSET :: [2]int{0, 16 * UNIT}
 
-// Hero idle animation - 2 frames with subtle breathing offset
+// Animation definition indices (for referencing defs in the atlas)
+ANIM_HERO_IDLE :: 0
+ANIM_HERO_RUN :: 1
+ANIM_HERO_JUMP_UP :: 2
+ANIM_HERO_JUMP_DOWN :: 3
+ANIM_HERO_LAND :: 4
+ANIM_HERO_HURT :: 5
+ANIM_ENEMY_WALK :: 6
+ANIM_ENEMY_IDLE :: 7
+
+// All animation frames stored contiguously
+// Frame indices:
+//   0-1:  Hero idle (2 frames)
+//   2-5:  Hero run (4 frames)
+//   6:    Hero jump up (1 frame)
+//   7:    Hero jump down (1 frame)
+//   8:    Hero land (1 frame)
+//   9:    Hero hurt (1 frame)
+//   10-11: Enemy walk (2 frames)
+//   12:   Enemy idle (1 frame)
 @(private = "file")
-hero_idle_frames := [?]AnimFrame {
+mock_anim_frames := [?]AnimFrame {
+	// Hero idle (frames 0-1)
 	{uv_index = UV_HERO_IDLE_1, offset = CHAR_OFFSET, duration = 0.5, flip = FLIP_NONE},
 	{uv_index = UV_HERO_IDLE_2, offset = {0, 15 * UNIT}, duration = 0.5, flip = FLIP_NONE},
-}
-
-@(private = "file")
-hero_idle_def := AnimDef {
-	frames  = hero_idle_frames[:],
-	looping = true,
-}
-
-// Hero run animation - 4 frames with bobbing
-@(private = "file")
-hero_run_frames := [?]AnimFrame {
+	// Hero run (frames 2-5)
 	{uv_index = UV_HERO_RUN_1, offset = CHAR_OFFSET, duration = 0.1, flip = FLIP_NONE},
 	{uv_index = UV_HERO_RUN_2, offset = {0, 14 * UNIT}, duration = 0.1, flip = FLIP_NONE},
 	{uv_index = UV_HERO_RUN_3, offset = CHAR_OFFSET, duration = 0.1, flip = FLIP_NONE},
 	{uv_index = UV_HERO_RUN_4, offset = {0, 14 * UNIT}, duration = 0.1, flip = FLIP_NONE},
-}
-
-@(private = "file")
-hero_run_def := AnimDef {
-	frames  = hero_run_frames[:],
-	looping = true,
-}
-
-// Hero jump up animation - single frame
-@(private = "file")
-hero_jump_up_frames := [?]AnimFrame {
+	// Hero jump up (frame 6)
 	{uv_index = UV_HERO_JUMP_UP, offset = CHAR_OFFSET, duration = 1.0, flip = FLIP_NONE},
-}
-
-@(private = "file")
-hero_jump_up_def := AnimDef {
-	frames  = hero_jump_up_frames[:],
-	looping = false,
-}
-
-// Hero jump down animation - single frame
-@(private = "file")
-hero_jump_down_frames := [?]AnimFrame {
+	// Hero jump down (frame 7)
 	{uv_index = UV_HERO_JUMP_DOWN, offset = CHAR_OFFSET, duration = 1.0, flip = FLIP_NONE},
-}
-
-@(private = "file")
-hero_jump_down_def := AnimDef {
-	frames  = hero_jump_down_frames[:],
-	looping = false,
-}
-
-// Hero land animation - brief squash effect
-@(private = "file")
-hero_land_frames := [?]AnimFrame{{uv_index = UV_HERO_LAND, offset = {0, 18 * UNIT}, duration = 0.15, flip = FLIP_NONE}}
-
-@(private = "file")
-hero_land_def := AnimDef {
-	frames  = hero_land_frames[:],
-	looping = false,
-}
-
-// Hero hurt animation
-@(private = "file")
-hero_hurt_frames := [?]AnimFrame{{uv_index = UV_HERO_HURT, offset = CHAR_OFFSET, duration = 0.3, flip = FLIP_NONE}}
-
-@(private = "file")
-hero_hurt_def := AnimDef {
-	frames  = hero_hurt_frames[:],
-	looping = false,
-}
-
-// Hero animation set
-@(private = "file")
-hero_anims := AnimSet {
-	idle      = &hero_idle_def,
-	run       = &hero_run_def,
-	jump_up   = &hero_jump_up_def,
-	jump_down = &hero_jump_down_def,
-	land      = &hero_land_def,
-	hurt      = &hero_hurt_def,
-	dash      = nil, // TODO: Add dash animation
-}
-
-// Enemy walk animation - 2 frames
-@(private = "file")
-enemy_walk_frames := [?]AnimFrame {
+	// Hero land (frame 8)
+	{uv_index = UV_HERO_LAND, offset = {0, 18 * UNIT}, duration = 0.15, flip = FLIP_NONE},
+	// Hero hurt (frame 9)
+	{uv_index = UV_HERO_HURT, offset = CHAR_OFFSET, duration = 0.3, flip = FLIP_NONE},
+	// Enemy walk (frames 10-11)
 	{uv_index = UV_ENEMY_WALK_1, offset = CHAR_OFFSET, duration = 0.2, flip = FLIP_NONE},
 	{uv_index = UV_ENEMY_WALK_2, offset = {0, 15 * UNIT}, duration = 0.2, flip = FLIP_NONE},
+	// Enemy idle (frame 12)
+	{uv_index = UV_ENEMY_IDLE, offset = CHAR_OFFSET, duration = 0.5, flip = FLIP_NONE},
 }
 
+// Animation definitions referencing frame ranges
 @(private = "file")
-enemy_walk_def := AnimDef {
-	frames  = enemy_walk_frames[:],
-	looping = true,
+mock_anim_defs := [?]AnimDef {
+	{frame_start = 0, frame_count = 2, looping = true}, // ANIM_HERO_IDLE
+	{frame_start = 2, frame_count = 4, looping = true}, // ANIM_HERO_RUN
+	{frame_start = 6, frame_count = 1, looping = false}, // ANIM_HERO_JUMP_UP
+	{frame_start = 7, frame_count = 1, looping = false}, // ANIM_HERO_JUMP_DOWN
+	{frame_start = 8, frame_count = 1, looping = false}, // ANIM_HERO_LAND
+	{frame_start = 9, frame_count = 1, looping = false}, // ANIM_HERO_HURT
+	{frame_start = 10, frame_count = 2, looping = true}, // ANIM_ENEMY_WALK
+	{frame_start = 12, frame_count = 1, looping = true}, // ANIM_ENEMY_IDLE
 }
 
-// Enemy idle animation
+// Hero animation set (pointers into mock_anim_defs)
 @(private = "file")
-enemy_idle_frames := [?]AnimFrame{{uv_index = UV_ENEMY_IDLE, offset = CHAR_OFFSET, duration = 0.5, flip = FLIP_NONE}}
-
-@(private = "file")
-enemy_idle_def := AnimDef {
-	frames  = enemy_idle_frames[:],
-	looping = true,
+hero_anims := AnimSet {
+	idle      = &mock_anim_defs[ANIM_HERO_IDLE],
+	run       = &mock_anim_defs[ANIM_HERO_RUN],
+	jump_up   = &mock_anim_defs[ANIM_HERO_JUMP_UP],
+	jump_down = &mock_anim_defs[ANIM_HERO_JUMP_DOWN],
+	land      = &mock_anim_defs[ANIM_HERO_LAND],
+	hurt      = &mock_anim_defs[ANIM_HERO_HURT],
+	dash      = nil, // TODO: Add dash animation
 }
 
 // Enemy animation set
 @(private = "file")
 enemy_anims := AnimSet {
-	idle      = &enemy_idle_def,
-	run       = &enemy_walk_def,
+	idle      = &mock_anim_defs[ANIM_ENEMY_IDLE],
+	run       = &mock_anim_defs[ANIM_ENEMY_WALK],
 	jump_up   = nil,
 	jump_down = nil,
 	land      = nil,
@@ -189,6 +152,12 @@ create_mock_data :: proc(w: ^World) {
 	// Initialize sprite atlas with UV coordinates
 	w.sprite_atlas = SpriteAtlas {
 		uvs = mock_atlas_uvs[:],
+	}
+
+	// Initialize animation atlas
+	w.animation_atlas = AnimationAtlas {
+		defs   = mock_anim_defs[:],
+		frames = mock_anim_frames[:],
 	}
 
 	w.grid = grid.create_grid(-5000 * UNIT, -5000 * UNIT, 5000 * UNIT, 5000 * UNIT, 16 * UNIT)
@@ -219,7 +188,7 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(&w.on_hurt, player, on_hurt_fn[.Player])
 	logic.add_component(&w.trigger, player, trigger_init_gun())
 	// Animation components
-	logic.add_component(&w.animation, player, animation_create(&hero_idle_def))
+	logic.add_component(&w.animation, player, animation_create(&mock_anim_defs[ANIM_HERO_IDLE]))
 	logic.add_component(&w.anim_controller, player, anim_controller_create(&hero_anims))
 
 	// Set up camera to track player
@@ -253,7 +222,7 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(&w.blink, enemy, blink_init())
 	logic.add_component(&w.sprite_shake, enemy, sprite_shake_init())
 	// Animation components
-	logic.add_component(&w.animation, enemy, animation_create(&enemy_walk_def))
+	logic.add_component(&w.animation, enemy, animation_create(&mock_anim_defs[ANIM_ENEMY_WALK]))
 	logic.add_component(&w.anim_controller, enemy, anim_controller_create(&enemy_anims))
 
 	// Level geometry

@@ -13,6 +13,7 @@ import "logic"
 
 sys_animation :: proc(w: ^World, dt: f32) {
 	view := logic.view(&w.animation, &w.sprite)
+	atlas := &w.animation_atlas
 
 	for id, anim, sprite in logic.each(&view) {
 		// Skip if no animation definition or not playing
@@ -20,7 +21,7 @@ sys_animation :: proc(w: ^World, dt: f32) {
 			continue
 		}
 
-		frames := anim.def.frames
+		frames := atlas_get_frames(atlas, anim.def)
 		if len(frames) == 0 {
 			continue
 		}

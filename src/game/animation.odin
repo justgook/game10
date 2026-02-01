@@ -2,26 +2,27 @@ package game
 
 // Animation System
 //
-// Two-level architecture:
-// 1. AnimDef - Shared animation definition (frames, timing, looping)
-// 2. Animation - Per-entity playback state (current frame, timer, callbacks)
+// Three-level architecture:
+// 1. AnimationAtlas - Shared storage for all animation defs and frames (loaded from binary)
+// 2. AnimDef - Animation definition referencing frames in the atlas
+// 3. Animation - Per-entity playback state (current frame, timer, callbacks)
 //
 // UV coordinates are stored in a shared SpriteAtlas. Animation frames reference
 // UVs by index, allowing reuse without duplication.
 //
+// Binary format for AnimationAtlas:
+//   Header: def_count (u32), frame_count (u32)
+//   Data:   [def_count]AnimDef, [frame_count]AnimFrame
+//
 // Usage:
-//   // Define frames referencing UV indices from the atlas
-//   idle_frames := []AnimFrame{
-//       {uv_index = 0, duration = 0.5},  // Uses atlas.uvs[0]
-//       {uv_index = 1, duration = 0.5},  // Uses atlas.uvs[1]
-//   }
-//   idle_def := AnimDef{frames = idle_frames[:], looping = true}
+//   // Get animation definition from atlas
+//   def := atlas_get_anim(&w.animation_atlas, ANIM_HERO_IDLE)
 //
 //   // Add component to entity
-//   logic.add_component(&w.animation, entity, animation_create(&idle_def))
+//   logic.add_component(&w.animation, entity, animation_create(def))
 //
 //   // Change animation
-//   animation_play(&anim, &run_def)
+//   animation_play(&anim, new_def)
 
 // Single frame of animation
 AnimFrame :: struct {
@@ -32,9 +33,18 @@ AnimFrame :: struct {
 }
 
 // Animation definition - shared data, multiple entities can reference same def
+// References frames by index into AnimationAtlas.frames
 AnimDef :: struct {
-	frames:  []AnimFrame,
-	looping: bool,
+	frame_start: int, // Start index into AnimationAtlas.frames
+	frame_count: int, // Number of frames in this animation
+	looping:     bool,
+}
+
+// Animation atlas - stores all animation definitions and their frames
+// Loaded from binary data, zero-copy mapping
+AnimationAtlas :: struct {
+	defs:   []AnimDef, // All animation definitions
+	frames: []AnimFrame, // All frames, defs reference by index
 }
 
 // Per-entity animation playback state
@@ -67,8 +77,25 @@ AnimId :: enum {
 	Enemy_Death,
 }
 
-// Global animation registry - indexed by AnimId
-Animation_Registry :: [AnimId]AnimDef
+// Get animation definition from atlas by index
+atlas_get_anim :: proc(atlas: ^AnimationAtlas, index: int) -> ^AnimDef {
+	if atlas == nil || index < 0 || index >= len(atlas.defs) {
+		return nil
+	}
+	return &atlas.defs[index]
+}
+
+// Get frames slice for an animation definition
+atlas_get_frames :: proc(atlas: ^AnimationAtlas, def: ^AnimDef) -> []AnimFrame {
+	if atlas == nil || def == nil {
+		return nil
+	}
+	end := def.frame_start + def.frame_count
+	if def.frame_start < 0 || end > len(atlas.frames) {
+		return nil
+	}
+	return atlas.frames[def.frame_start:end]
+}
 
 // Create a new Animation component pointing to a definition
 animation_create :: proc(def: ^AnimDef) -> Animation {
@@ -129,27 +156,30 @@ animation_is_finished :: proc(anim: ^Animation) -> bool {
 	if anim.def.looping {
 		return false
 	}
-	return anim.frame_index >= len(anim.def.frames) - 1 && !anim.playing
+	return anim.frame_index >= anim.def.frame_count - 1 && !anim.playing
 }
 
-// Get current frame (nil if no animation)
-animation_get_frame :: proc(anim: ^Animation) -> ^AnimFrame {
-	if anim.def == nil || len(anim.def.frames) == 0 {
+// Get current frame from atlas (nil if no animation)
+animation_get_frame :: proc(atlas: ^AnimationAtlas, anim: ^Animation) -> ^AnimFrame {
+	if anim.def == nil || anim.def.frame_count == 0 {
 		return nil
 	}
-	return &anim.def.frames[anim.frame_index]
+	frames := atlas_get_frames(atlas, anim.def)
+	if frames == nil {
+		return nil
+	}
+	return &frames[anim.frame_index]
 }
 
 // Get animation progress (0.0 to 1.0)
 animation_get_progress :: proc(anim: ^Animation) -> f32 {
-	if anim.def == nil || len(anim.def.frames) == 0 {
+	if anim.def == nil || anim.def.frame_count == 0 {
 		return 0
 	}
-	total_frames := len(anim.def.frames)
-	if total_frames == 1 {
+	if anim.def.frame_count == 1 {
 		return 1.0
 	}
-	return f32(anim.frame_index) / f32(total_frames - 1)
+	return f32(anim.frame_index) / f32(anim.def.frame_count - 1)
 }
 
 // Set playback speed (1.0 = normal, 2.0 = double speed, 0.5 = half speed)
@@ -158,12 +188,16 @@ animation_set_speed :: proc(anim: ^Animation, speed: f32) {
 }
 
 // Helper to calculate total duration of an animation
-animdef_total_duration :: proc(def: ^AnimDef) -> f32 {
+animdef_total_duration :: proc(atlas: ^AnimationAtlas, def: ^AnimDef) -> f32 {
 	if def == nil {
 		return 0
 	}
+	frames := atlas_get_frames(atlas, def)
+	if frames == nil {
+		return 0
+	}
 	total: f32 = 0
-	for &frame in def.frames {
+	for &frame in frames {
 		total += frame.duration
 	}
 	return total

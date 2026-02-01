@@ -172,10 +172,9 @@ sys_anim_controller :: proc(w: ^World, dt: f32) {
 
 		// Apply flip based on facing
 		// Get the current animation's flip and combine with facing
-		if anim.def != nil && len(anim.def.frames) > 0 {
-			frame := &anim.def.frames[anim.frame_index]
-			// If facing left, add FLIP_X to the frame's flip
-			if ctrl.facing < 0 {
+		if anim.def != nil && anim.def.frame_count > 0 {
+			frame := animation_get_frame(&w.animation_atlas, anim)
+			if frame != nil && ctrl.facing < 0 {
 				// Combine frame flip with horizontal flip for facing
 				if sprite, ok := logic.get_component(&w.sprite, id); ok {
 					// XOR with FLIP_X to toggle horizontal flip based on facing
@@ -187,7 +186,7 @@ sys_anim_controller :: proc(w: ^World, dt: f32) {
 }
 
 // Helper to trigger land animation with lock
-anim_controller_on_land :: proc(ctrl: ^AnimController, anim: ^Animation, power: f32) {
+anim_controller_on_land :: proc(atlas: ^AnimationAtlas, ctrl: ^AnimController, anim: ^Animation, power: f32) {
 	if ctrl.anims == nil || ctrl.anims.land == nil {
 		return
 	}
@@ -197,19 +196,19 @@ anim_controller_on_land :: proc(ctrl: ^AnimController, anim: ^Animation, power: 
 		ctrl.current_state = .Land
 		animation_play(anim, ctrl.anims.land)
 		// Lock for the duration of the animation
-		lock_duration := animdef_total_duration(ctrl.anims.land)
+		lock_duration := animdef_total_duration(atlas, ctrl.anims.land)
 		anim_controller_lock(ctrl, lock_duration * 0.8) // Slight overlap for smoothness
 	}
 }
 
 // Helper to trigger hurt animation with lock
-anim_controller_on_hurt :: proc(ctrl: ^AnimController, anim: ^Animation) {
+anim_controller_on_hurt :: proc(atlas: ^AnimationAtlas, ctrl: ^AnimController, anim: ^Animation) {
 	if ctrl.anims == nil || ctrl.anims.hurt == nil {
 		return
 	}
 
 	ctrl.current_state = .Hurt
 	animation_play(anim, ctrl.anims.hurt)
-	lock_duration := animdef_total_duration(ctrl.anims.hurt)
+	lock_duration := animdef_total_duration(atlas, ctrl.anims.hurt)
 	anim_controller_lock(ctrl, lock_duration)
 }
