@@ -179,7 +179,7 @@ sys_anim_controller :: proc(w: ^World, dt: f32) {
 				// Combine frame flip with horizontal flip for facing
 				if sprite, ok := logic.get_component(&w.sprite, id); ok {
 					// XOR with FLIP_X to toggle horizontal flip based on facing
-					sprite.flip = frame.flip ~ FLIP_X
+					sprite.flip = frame.flip ~ FLIP_H
 				}
 			}
 		}

@@ -3,12 +3,17 @@ package game
 import "logic"
 import sapp "sokol/app"
 
-// Flip flags for sprite rendering
+// Flip flags for sprite rendering (matches Tiled TMX format)
+// Bit 0 = Horizontal flip, Bit 1 = Vertical flip, Bit 2 = Anti-diagonal flip
 Flip :: distinct u8
-FLIP_NONE :: Flip(0)
-FLIP_X :: Flip(1) // Flip horizontally
-FLIP_Y :: Flip(2) // Flip vertically
-FLIP_XY :: Flip(3) // Flip both
+FLIP_NONE :: Flip(0) // No transformation
+FLIP_H :: Flip(1)    // Horizontal flip
+FLIP_V :: Flip(2)    // Vertical flip
+FLIP_HV :: Flip(3)   // Horizontal + Vertical (180° rotation)
+FLIP_D :: Flip(4)    // Anti-diagonal flip (transpose)
+FLIP_DH :: Flip(5)   // Anti-diagonal + Horizontal (90° CW)
+FLIP_DV :: Flip(6)   // Anti-diagonal + Vertical (90° CCW)
+FLIP_DHV :: Flip(7)  // Anti-diagonal + H + V
 
 Sprite :: struct {
 	uv:        [4]f32,
