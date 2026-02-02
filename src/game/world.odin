@@ -10,7 +10,6 @@ import sapp "sokol/app"
 
 
 LOCALES_DIR :: #config(LOCALES_DIR, "../../build.nosync/locales")
-GAME_DATA :: #config(GAME_DATA, "../../build.nosync/atlas.bin")
 
 Segment :: [4]int
 

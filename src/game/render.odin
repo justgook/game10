@@ -40,6 +40,8 @@ render_init :: proc(r: ^Render) {
 	fmt.println("Render init")
 	// test_img, success := load_test_img("assets/1.png")
 	// success := load_test_img("assets/dd-000-000__FINAL__ATLAS.qoi", r)
+	// atlas_w, atlas_h, success := load_test_img(GAME_ATLAS, r)
+
 	atlas_w, atlas_h, success := load_test_img("assets/atlas.qoi", r)
 
 	assert(success, "fail load img")

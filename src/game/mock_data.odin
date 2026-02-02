@@ -60,7 +60,7 @@ mock_atlas_uvs := [?]UV {
 
 // Standard offset for character sprites
 @(private = "file")
-CHAR_OFFSET :: [2]int{0, 16 * UNIT}
+CHAR_OFFSET :: [2]i32{0, 16 * UNIT}
 
 // Animation definition indices (for referencing defs in the atlas)
 ANIM_HERO_IDLE :: 0
@@ -110,14 +110,14 @@ mock_anim_frames := [?]AnimFrame {
 // Animation definitions referencing frame ranges
 @(private = "file")
 mock_anim_defs := [?]AnimDef {
-	{frame_start = 0, frame_count = 2, looping = true}, // ANIM_HERO_IDLE
-	{frame_start = 2, frame_count = 4, looping = true}, // ANIM_HERO_RUN
-	{frame_start = 6, frame_count = 1, looping = false}, // ANIM_HERO_JUMP_UP
-	{frame_start = 7, frame_count = 1, looping = false}, // ANIM_HERO_JUMP_DOWN
-	{frame_start = 8, frame_count = 1, looping = false}, // ANIM_HERO_LAND
-	{frame_start = 9, frame_count = 1, looping = false}, // ANIM_HERO_HURT
-	{frame_start = 10, frame_count = 2, looping = true}, // ANIM_ENEMY_WALK
-	{frame_start = 12, frame_count = 1, looping = true}, // ANIM_ENEMY_IDLE
+	{frame_start = 0, frame_count = 2, looping = 1}, // ANIM_HERO_IDLE
+	{frame_start = 2, frame_count = 4, looping = 1}, // ANIM_HERO_RUN
+	{frame_start = 6, frame_count = 1, looping = 0}, // ANIM_HERO_JUMP_UP
+	{frame_start = 7, frame_count = 1, looping = 0}, // ANIM_HERO_JUMP_DOWN
+	{frame_start = 8, frame_count = 1, looping = 0}, // ANIM_HERO_LAND
+	{frame_start = 9, frame_count = 1, looping = 0}, // ANIM_HERO_HURT
+	{frame_start = 10, frame_count = 2, looping = 1}, // ANIM_ENEMY_WALK
+	{frame_start = 12, frame_count = 1, looping = 1}, // ANIM_ENEMY_IDLE
 }
 
 // Hero animation set (pointers into mock_anim_defs)
@@ -169,7 +169,11 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(
 		&w.sprite,
 		player,
-		Sprite{offset = CHAR_OFFSET, uv = PLACEHOLDER_UV, flip = FLIP_NONE},
+		Sprite {
+			offset = [2]int{int(CHAR_OFFSET[0]), int(CHAR_OFFSET[1])},
+			uv = PLACEHOLDER_UV,
+			flip = FLIP_NONE,
+		},
 	)
 	logic.add_component(&w.collider, player, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.input, player, Input{})
@@ -203,7 +207,11 @@ create_mock_data :: proc(w: ^World) {
 	logic.add_component(
 		&w.sprite,
 		enemy,
-		Sprite{offset = CHAR_OFFSET, uv = PLACEHOLDER_UV, flip = FLIP_NONE},
+		Sprite {
+			offset = [2]int{int(CHAR_OFFSET[0]), int(CHAR_OFFSET[1])},
+			uv = PLACEHOLDER_UV,
+			flip = FLIP_NONE,
+		},
 	)
 	logic.add_component(&w.collider, enemy, shape.Capsule{y = 14 * UNIT, radius = 7 * UNIT, height = 14 * UNIT})
 	logic.add_component(&w.jump, enemy, JumpState{})

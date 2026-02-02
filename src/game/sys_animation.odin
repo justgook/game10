@@ -41,8 +41,8 @@ sys_animation :: proc(w: ^World, dt: f32) {
 			anim.frame_index += 1
 
 			// Handle end of animation
-			if anim.frame_index >= len(frames) {
-				if anim.def.looping {
+			if int(anim.frame_index) >= len(frames) {
+				if anim.def.looping != 0 {
 					// Loop back to start
 					anim.frame_index = 0
 					if anim.on_loop != nil {
@@ -50,7 +50,7 @@ sys_animation :: proc(w: ^World, dt: f32) {
 					}
 				} else {
 					// Stop at last frame
-					anim.frame_index = len(frames) - 1
+					anim.frame_index = u32(len(frames) - 1)
 					anim.frame_timer = 0
 					anim.playing = false
 					break
@@ -68,8 +68,8 @@ sys_animation :: proc(w: ^World, dt: f32) {
 
 		// Update sprite component from current animation frame
 		frame := &frames[anim.frame_index]
-		sprite.uv = atlas_get_uv(&w.sprite_atlas, frame.uv_index)
-		sprite.offset = frame.offset
+		sprite.uv = atlas_get_uv(&w.sprite_atlas, int(frame.uv_index))
+		sprite.offset = [2]int{int(frame.offset[0]), int(frame.offset[1])}
 		sprite.flip = frame.flip
 	}
 }

@@ -1,5 +1,9 @@
 package game
 
+
+GAME_DATA :: #config(GAME_DATA, "../../build.nosync/game.bin")
+GAME_ATLAS :: #config(GAME_DATA, "../../build.nosync/atlas.qoi")
+
 // Constants for subpixel precision
 SUBPIXEL_BITS :: 6 // 64 subpixels per pixel
 UNIT :: 1 << SUBPIXEL_BITS
