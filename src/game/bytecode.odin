@@ -65,10 +65,10 @@ decode_animations :: proc(ctx: ^Prefab_Context, data: []byte) {
 	fmt.println("decoding animations", "defs", def_count, "frames", frame_count)
 	fmt.println("the data", "defs", defs)
 	fmt.println("the data", "frames", frames)
-	// ctx.world.animation_atlas = AnimationAtlas {
-	// 	defs   = defs,
-	// 	frames = frames,
-	// }
+	ctx.world.animation_atlas = AnimationAtlas {
+		defs   = defs,
+		frames = frames,
+	}
 }
 
 

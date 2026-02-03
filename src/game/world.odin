@@ -54,7 +54,7 @@ World :: struct {
 	trigger:          logic.Component_Storage(Trigger),
 	// Animation
 	animation:        logic.Component_Storage(Animation),
-	anim_controller:  logic.Component_Storage(AnimController),
+	anim_controller:  logic.Component_Storage(AnimControllerPlatformer),
 }
 
 world_init :: proc(w: ^World) {
@@ -74,7 +74,6 @@ world_init :: proc(w: ^World) {
 	w.particles = particle_pool_init()
 
 	// change_scene(w, "build.nosync/dd-000-000.wbin")
-	create_mock_data(w)
 
 	fmt.println("================================================================================")
 	data, _ := entry.read_entire_file(GAME_DATA, context.temp_allocator)
@@ -83,12 +82,11 @@ world_init :: proc(w: ^World) {
 	bytecode_load(w, data)
 	// fmt.println("loaded", "world", w.position)
 	fmt.println("================================================================================")
-
+	create_mock_data(w)
 }
 
 world_frame :: proc(w: ^World) {
 	// w.pasued = true
-
 	// only tick the game state at the rate of sims_per_second
 	// https://gafferongames.com/post/fix_your_timestep/
 	if !w.pasued {
