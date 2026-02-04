@@ -13,6 +13,15 @@ LOCALES_DIR :: #config(LOCALES_DIR, "../../build.nosync/locales")
 
 Segment :: [4]int
 
+// TilemapLayer stores data for a single tilemap layer
+TilemapLayer :: struct {
+	position:        [2]f32, // World position
+	tile_size:       [2]f32, // Tile dimensions in pixels
+	tileset_uv_idx:  u32,    // Index into sprite_atlas.uvs for tileset
+	lut_uv_idx:      u32,    // Index into sprite_atlas.uvs for LUT
+	map_size:        [2]u32, // Map dimensions in tiles (width, height)
+}
+
 World :: struct {
 	pasued:           bool,
 	next_entity_id:   int,
@@ -29,6 +38,8 @@ World :: struct {
 	sprite_atlas:     SpriteAtlas,
 	// Animation atlas (shared animation definitions and frames)
 	animation_atlas:  AnimationAtlas,
+	// Tilemap layers (from binary data)
+	tilemaps:         [dynamic]TilemapLayer,
 	// Components
 	position:         logic.Component_Storage(Position),
 	velocity:         logic.Component_Storage(Velocity),
@@ -210,4 +221,5 @@ world_cleanup :: proc(w: ^World) {
 
 	grid.destroy_grid(&w.grid)
 	delete(w.segments)
+	delete(w.tilemaps)
 }
