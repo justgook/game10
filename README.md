@@ -7,3 +7,11 @@ ideas of sprite sheets, maybe use isometric ? [sheets](https://retrostylegames.c
 ## Levels:
 [Hub (city)](https://craftpix.net/product/cyberpunk-market-street-pixel-art/)
 
+
+https://gitlab.com/bztsrc/scalable-font2 as bitmap font format ?
+https://github.com/MichaelMackus/libroguelike - some code to reuse
+
+Audio ideas:
+mixer: https://github.com/BareRose/atomix
+pl_synth: music / effect generator + add own opcode based VM for music manipulation (enable/disable tracks; manipulate instruments)
+
